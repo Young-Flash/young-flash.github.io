@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>selenium + pytesseract 实现自动识别验证码实现自动打卡 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/lubo-minar-36MpUuHiaLg-unsplash.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="selenium + pytesseract 实现自动识别验证码实现自动打卡">
+              
+                selenium + pytesseract 实现自动识别验证码实现自动打卡
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2020-05-02 21:34" pubdate>
+        2020年5月2日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      952 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      12
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">selenium + pytesseract 实现自动识别验证码实现自动打卡</h1>
+            
+            <div class="markdown-body">
+              <h2 id="1-步骤"><a class="markdownIt-Anchor" href="#1-步骤"></a> 1、步骤：</h2>
+<p>利用 chromedriver 打开浏览器 --&gt; 登陆网站（识别验证码）–&gt; 自动化操作</p>
+<h2 id="2-难点"><a class="markdownIt-Anchor" href="#2-难点"></a> 2、难点：</h2>
+<p><strong>2.1、登陆网站：</strong></p>
+<p>本来想用 cookie，但是我们学校的网站的 cookie 中 httponly = False，不能用这种方式绕过登陆。只能识别出验证码后登陆，过了登陆这关后便是一马平川。</p>
+<p><strong>2.2、网站元素的识别：</strong></p>
+<p>世界上最遥远的距离，不是生与死，而是你在我眼前，我却识别不了你。<br />
+selenium 提供多种元素识别方式，常用的有 id、name、class、xpath 等，一种方式识别不了就换另一种，针对不同元素（不同网页）识别的方式也不同，可参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_32897143/article/details/80383502">https://blog.csdn.net/qq_32897143/article/details/80383502</a></p>
+<h2 id="3-环境要求"><a class="markdownIt-Anchor" href="#3-环境要求"></a> 3、环境要求：</h2>
+<ul>
+<li>selenium</li>
+<li>pytesseract</li>
+<li>pillow</li>
+</ul>
+<p>在命令行使用pip命令安装以上第三方库，默认的安装方式很慢，使用镜像网站安装会快很多，直接复制下面这行到 cmd<br />
+pip install --index <a target="_blank" rel="noopener" href="https://pypi.mirrors.ustc.edu.cn/simple/">https://pypi.mirrors.ustc.edu.cn/simple/</a> selenium</p>
+<p>安装完以上库后，还需安装chromedriver（selenium的浏览器驱动，edge或firefox也可）和 tesseract（用于识别出验证码）</p>
+<p>安装 chromedriver：打开<a target="_blank" rel="noopener" href="http://npm.taobao.org/mirrors/chromedriver/">网站</a>，找到对应自己的版本后下载，将 chromedriver.exe 文件复制到python的Scripts文件夹下（在cmd中用where python命令可找到自己的安装路径）</p>
+<p>安装tesseract：参照<a target="_blank" rel="noopener" href="https://blog.csdn.net/showgea/article/details/82656515">https://blog.csdn.net/showgea/article/details/82656515</a></p>
+<h2 id="4-完整代码"><a class="markdownIt-Anchor" href="#4-完整代码"></a> 4、完整代码：</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> selenium <span class="hljs-keyword">import</span> webdriver<br><span class="hljs-keyword">from</span> selenium.webdriver.support.select <span class="hljs-keyword">import</span> Select <span class="hljs-comment">#专门用来处理下拉框</span><br><span class="hljs-keyword">import</span> pytesseract<br><span class="hljs-keyword">import</span> os<br><span class="hljs-keyword">import</span> sys,time<br><span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image,ImageEnhance<br>website= <span class="hljs-string">&#x27;https://www.xxx.com&#x27;</span> <span class="hljs-comment">#打卡的网站</span><br>img_address = <span class="hljs-string">&#x27;C:\\Users\\HP--\\Pictures\\喜欢的照片\\image1.png&#x27;</span> <span class="hljs-comment">#将验证码图片下载下来后存放的地址，</span><br> <br>driver = webdriver.Chrome()<br>driver.maximize_window()d<br>cnt = <span class="hljs-number">0</span> <span class="hljs-comment">#计数多少次识别验证码才成功</span><br><br><span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>: <span class="hljs-comment">#循环识别验证码直到成功</span><br>	driver.get(website)<br>	driver.get_screenshot_as_file(img_adress) <span class="hljs-comment">#将整个网页截图</span><br><br>	img =Image.<span class="hljs-built_in">open</span>(img_address)<br>	box = (<span class="hljs-number">1217</span> , <span class="hljs-number">496</span> , <span class="hljs-number">1310</span> , <span class="hljs-number">541</span>)  <span class="hljs-comment">#设置要裁剪的区域</span><br>	img = img.crop(box) <span class="hljs-comment">#裁剪出只有验证码的图片(用【画图】打开截下的图片，鼠标滑到验证码的左上和右下，两个坐标就是要裁剪的区域。顺序：左上横坐标，左上纵坐标，右下横坐标，右下纵坐标)</span><br>	img.save(img_address) <span class="hljs-comment">#将图片更新为截下的只有验证码的图</span><br>	<br>	vc = pytesseract.image_to_string(img_address) <span class="hljs-comment">#保存验证码</span><br>	account = <span class="hljs-string">&#x27;xxxxx&#x27;</span><br>	password = <span class="hljs-string">&#x27;xxxxx&#x27;</span><br>	<br>	<span class="hljs-keyword">try</span>:<br>		driver.find_element_by_name(<span class="hljs-string">&quot;account&quot;</span>).send_keys(account)<br>		driver.find_element_by_name(<span class="hljs-string">&quot;password&quot;</span>).send_keys(password)<br>		driver.find_element_by_name(<span class="hljs-string">&quot;rancode&quot;</span>).send_keys(verfication_code)<br>		driver.find_element_by_class_name(<span class="hljs-string">&quot;login&quot;</span>).click()<br><br>		<span class="hljs-keyword">if</span>(driver.find_element_by_id(<span class="hljs-string">&quot;rancode-tips&quot;</span>)): <span class="hljs-comment">#这里是验证码识别不正确点击登陆后出现的错误信息</span><br>			cnt += <span class="hljs-number">1</span><br>			<span class="hljs-keyword">continue</span><br>	<span class="hljs-keyword">except</span>: <span class="hljs-comment">#正确识别后成功登陆，退出while循环</span><br>		<span class="hljs-keyword">break</span> <br><br><span class="hljs-keyword">try</span>: <span class="hljs-comment">#会出现一些我不知道原因的错误，所以还是用异常捕获吧</span><br>	driver.find_element_by_class_name(<span class="hljs-string">&quot;bdorange.bg_health&quot;</span>).click()<br>	driver.find_element_by_link_text(<span class="hljs-string">&quot;健康打卡&quot;</span>).click()<br>	driver.find_element_by_id(<span class="hljs-string">&quot;cph_right_ok_submit&quot;</span>).click()<br><br>	opt = driver.find_element_by_id(<span class="hljs-string">&quot;cph_right_e_area&quot;</span>)<br>	s = Select(opt)<br>	s.select_by_visible_text(<span class="hljs-string">&#x27;XX省&#x27;</span>) <br>	<span class="hljs-comment">#以上三句用select方法处理下拉框</span><br><br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_location&#x27;</span>).send_keys(<span class="hljs-string">&#x27;XX市&#x27;</span>)<br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_observation_0&#x27;</span>).click()<br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_health_0&#x27;</span>).click()<br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_temp&#x27;</span>).send_keys(<span class="hljs-string">&#x27;36.6&#x27;</span>)<br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_survey01_0&#x27;</span>).click()<br>	driver.find_element_by_id(<span class="hljs-string">&#x27;cph_right_e_submit&#x27;</span>).click()<br><span class="hljs-keyword">except</span>:<br>	<span class="hljs-keyword">pass</span><br><br>driver.quit()<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;经过&#123;&#125;次尝试，自动健康打卡完成！&#x27;</span>.<span class="hljs-built_in">format</span>(cnt))<br></code></pre></td></tr></table></figure>
+<h2 id="5-说明"><a class="markdownIt-Anchor" href="#5-说明"></a> 5、说明：</h2>
+<p>以上程序不具有设备无关性，因为是直接截图下来后保存再截下验证码所在区域那块，不同计算机的屏幕不一样，所以验证码的坐标值应该也不一样。如果写完程序想发给同学试试<strong>记得要做一些修改</strong>，不然Ta会以为你不行！！！selenium 是用来模仿人在浏览器上的操作的，若是想更好的地模仿，应该在每下操作后用 time.sleep() 停顿一两秒。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E7%9E%8E%E6%90%9E/">瞎搞</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/mess/">mess</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/06/%E6%9C%89%E7%B1%BBIP%E5%9C%B0%E5%9D%80%E3%80%81%E5%AD%90%E7%BD%91%E6%8E%A9%E7%A0%81%EF%BC%88%E5%88%92%E5%88%86%E5%AD%90%E7%BD%91%EF%BC%89%E3%80%81%E6%97%A0%E7%B1%BB%E5%9F%9F%E9%97%B4%E8%B7%AF%E7%94%B1%EF%BC%88CIDR%EF%BC%89/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">有类IP地址、子网掩码（划分子网）、无类域间路由（CIDR）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

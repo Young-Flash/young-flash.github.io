@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>将一个 makefile 项目转化为 CMake 项目 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/patrick-fOYg1lkZA7Y-unsplash.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="将一个 makefile 项目转化为 CMake 项目">
+              
+                将一个 makefile 项目转化为 CMake 项目
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-12-05 14:30" pubdate>
+        2021年12月5日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      15
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">将一个 makefile 项目转化为 CMake 项目</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>在 GitHub 看到一个 <a target="_blank" rel="noopener" href="https://github.com/qinguoyi/TinyWebServer">Web 服务器项目</a>，想用来回顾一下网络编程方面的知识。发现这是一个由 makefile 构建的项目，而现在主流的构建方式是 CMake，所以想先把它转化为一个  CMake 项目。主要是根据项目结构以及 makefile 文件编写 CMakeLists.txt。</p>
+<h2 id="准备工作"><a class="markdownIt-Anchor" href="#准备工作"></a> 准备工作</h2>
+<ul>
+<li>在 Linux 中安装 MySQL，推荐在 docker 中安装。（踩坑：一开始是直接在 Linux 中安装，后来想改成 docker 安装，在 docker 中安装后启动时报错端口被占用和一个别的错误，最后发现是一开始直接安装的 MySQL 和 docker 中的冲突的，原来的 mysqld 进程一直占用着 3306 端口， kill -9 也杀不掉，最后把直接安装的 MySQL 卸载干净了才能顺利启动 docker 中的 MySQL）</li>
+<li>安装 mysql 开发库：sudo apt-get install libmysqlclient-dev （安装在 /usr/include/mysql 目录下）</li>
+</ul>
+<h2 id="项目结构"><a class="markdownIt-Anchor" href="#项目结构"></a> 项目结构</h2>
+<p>这个项目有三个分支，我选择从 raw_version 分支入手。该分支的项目结构如下：</p>
+<p><img src="/img/blog_pic/2021/makefile%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png" srcset="/img/loading.gif" alt="" /></p>
+<p>有些模块的接口定义（.h）和实现（.cpp）分离了而有些模块没有，个人觉得这是一个不够规范的地方。makefile 文件的内容如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">server: main.c \</span><br>		./threadpool/threadpool.h \<br>		./http/http_conn.cpp ./http/http_conn.h \<br>		./lock/locker.h ./log/log.cpp ./log/log.h ./log/block_queue.h \<br>		./CGImysql/sql_connection_pool.cpp ./CGImysql/sql_connection_pool.h<br><br>	g++ -o server \<br>	main.c \<br>	./threadpool/threadpool.h \<br>	./http/http_conn.cpp ./http/http_conn.h \<br>	./lock/locker.h ./log/log.cpp ./log/log.h \<br>	./CGImysql/sql_connection_pool.cpp ./CGImysql/sql_connection_pool.h \<br>	-lpthread -lmysqlclient<br><br><br><span class="hljs-section">clean:</span><br>	rm  -r server<br></code></pre></td></tr></table></figure>
+<p>总体来说是比较简单的。这里将一些头文件（.h）也一并加入，我尝试过去掉这些头文件后同样能正常编译运行。</p>
+<h2 id="编写-cmakeliststxt"><a class="markdownIt-Anchor" href="#编写-cmakeliststxt"></a> 编写 CMakeLists.txt</h2>
+<p>首先新建了 <code>include</code> 文件夹，在其中放置各个模块的头文件，定义和实现没有分离的也一并放入其中。此时项目结构如下：</p>
+<p><img src="/img/blog_pic/2021/cmake%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.png" srcset="/img/loading.gif" alt="" /></p>
+<p>根据此时的项目结构，结合已有的 makefile 文件编写 CMakeLists.txt 如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cmake"><span class="hljs-keyword">cmake_minimum_required</span>(VERSION <span class="hljs-number">3.0</span>) <br><br><span class="hljs-keyword">project</span>(WebServerCmake)<br><br><span class="hljs-keyword">set</span>(CMAKE_BUILD_TYPE Debug)<br><span class="hljs-keyword">set</span>(CMAKE_CXX_FLAGS <span class="hljs-string">&quot;$&#123;CMAKE_CXX_FLAGS&#125; -g&quot;</span>)<br><br><span class="hljs-keyword">set</span>(path <span class="hljs-variable">$&#123;CMAKE_SOURCE_DIR&#125;</span>)<br><br><span class="hljs-comment"># 引入头文件搜索目录</span><br><span class="hljs-keyword">include_directories</span>(<span class="hljs-variable">$&#123;path&#125;</span>/<span class="hljs-keyword">include</span>)<br><br><span class="hljs-comment"># 生成可执行文件（比起原来的 makefile 少了一些 .h 头文件）</span><br><span class="hljs-keyword">add_executable</span>(WebServerCmake<br>        main.cpp<br>        CGImysql/sql_connection_pool.cpp<br>        log/log.cpp<br>        http/http_conn.cpp)<br><br><span class="hljs-comment"># 链接动态库，对应于原 makefile 中的 -lpthread -lmysqlclient</span><br><span class="hljs-keyword">target_link_libraries</span>(WebServerCmake libmysqlclient.so)<br><span class="hljs-keyword">target_link_libraries</span>(WebServerCmake libpthread.so)<br></code></pre></td></tr></table></figure>
+<p>还需要修改一下修改后文件的 #include 路径；之后运行下面的命令后就可以构建并运行项目了：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">mkdir build &amp;&amp; <span class="hljs-keyword">cd</span> build<br>cmake <span class="hljs-string">..</span><br>make<br><span class="hljs-string">./WebServerCmake</span> 1256<br></code></pre></td></tr></table></figure>
+<h2 id="在-vscode-中运行并调试项目"><a class="markdownIt-Anchor" href="#在-vscode-中运行并调试项目"></a> 在 vscode 中运行并调试项目</h2>
+<p>主要是配置 .vscode 文件夹中的 launch.json 和 tasks.json。在 vscode 中启动 c++ 项目调试便是依靠这两个文件的配置</p>
+<p>tasks.json 中的命令会在 launch.json 中的 命令之前前执行，即对应<code>preLaunchTask</code>，可以在 tasks.json 中配置执行 cd build &amp;&amp; cmake … &amp;&amp; make 这些命令</p>
+<p>tasks.json</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span>   <br>    <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2.0.0&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;options&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;cwd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;$&#123;workspaceFolder&#125;/build&quot;</span> <span class="hljs-comment">// 进入 build 文件夹</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;tasks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-comment">// 运行 cmake .. 命令</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;shell&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;..&quot;</span><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-comment">// 运行 make 命令</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;make&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;group&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;kind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;build&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;isDefault&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;make&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;label&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Build&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;dependsOrder&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sequence&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 按列出的顺序执行任务依赖项</span><br>            <span class="hljs-attr">&quot;dependsOn&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><br>                <span class="hljs-string">&quot;cmake&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-string">&quot;make&quot;</span><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>launch.json</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs jso">&#123;<br>    &quot;version&quot;: &quot;0.2.0&quot;,<br>    &quot;configurations&quot;: [<br>        &#123;<br>            &quot;name&quot;: &quot;g++ - 生成和调试活动文件&quot;,<br>            &quot;type&quot;: &quot;cppdbg&quot;,<br>            &quot;request&quot;: &quot;launch&quot;,<br>            &quot;program&quot;: &quot;$&#123;workspaceFolder&#125;/build/WebServerCmake&quot;, // 可执行文件的位置<br>            &quot;args&quot;: [<br>                &quot;1256&quot; // 命令行启动时的参数 ./WebServerCmake 1256<br>            ],<br>            &quot;stopAtEntry&quot;: false,<br>            &quot;cwd&quot;: &quot;$&#123;fileDirname&#125;&quot;,<br>            &quot;environment&quot;: [],<br>            &quot;externalConsole&quot;: false,<br>            &quot;MIMode&quot;: &quot;gdb&quot;,<br>            &quot;setupCommands&quot;: [<br>                &#123;<br>                    &quot;description&quot;: &quot;为 gdb 启用整齐打印&quot;,<br>                    &quot;text&quot;: &quot;-enable-pretty-printing&quot;,<br>                    &quot;ignoreFailures&quot;: true<br>                &#125;<br>            ],<br>            &quot;preLaunchTask&quot;: &quot;Build&quot;, // 这里要和 task.json 中 的 Build 一致<br>            &quot;miDebuggerPath&quot;: &quot;/usr/bin/gdb&quot;<br>        &#125;<br>    ]<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.runoob.com/docker/docker-install-mysql.html">Docker 安装 MySQL</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_40861091/article/details/89345860">Linux下安装完MySQL之后，include文件夹下没有包含mysql.h头文件的解决办法</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhizhengguan/article/details/107068970">C/C++编程：CMakeList链接mysql出现/usr/bin/ld: 找不到 -lmysqlclient</a></p>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV13K411M78v?from=search&amp;seid=16549448524734942123&amp;spm_id_from=333.337.0.0">手把手教会VSCode的C++环境搭建，多文件编译，Cmake，json调试配置（ Windows篇）</a></p>
+</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/CMake/">CMake</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/11/%E7%88%B6%E5%AD%90%E8%BF%9B%E7%A8%8B%E9%80%9A%E8%BF%87%20pipe()%20%E7%AE%A1%E9%81%93%E9%80%9A%E4%BF%A1%E6%97%B6%E4%B8%80%E6%96%B9%E9%9C%80%E5%85%B3%E9%97%AD%E8%AF%BB%E7%AB%AF%E5%8F%A6%E4%B8%80%E6%96%B9%E9%9C%80%E5%85%B3%E9%97%AD%E5%86%99%E7%AB%AF/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">父子进程通过 pipe() 管道通信时一方需关闭读端另一方需关闭写端</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/11/19/nebula-jdbc%20%E6%96%87%E6%A1%A3/">
+                        <span class="hidden-mobile">nebula-jdbc 文档</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

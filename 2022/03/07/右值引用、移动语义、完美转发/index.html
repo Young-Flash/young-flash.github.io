@@ -1,0 +1,543 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>右值引用、移动语义、完美转发 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/photo-1646745309871-f9cef84ccd5e.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="右值引用、移动语义、完美转发">
+              
+                右值引用、移动语义、完美转发
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-03-07 13:35" pubdate>
+        2022年3月7日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.5k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      17
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">右值引用、移动语义、完美转发</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>右值引用、移动语义、完美转发是 C++ 11 引入的一大新特性。即使在代码中没有显示地使用到他们我们也能得到性能上的提升，STL 中容器类就大量使用了这些新特性，在使用这些容器时我们”隐式“地从中受益。比如 vector 类在扩容时需要把原来的对象挪到新开辟的空间中，若数据类型重写了移动构造函数并且标记为 <a target="_blank" rel="noopener" href="https://flash-flash.gitee.io/2021/12/18/%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%B0%86%E7%A7%BB%E5%8A%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E7%A7%BB%E5%8A%A8%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6%E6%A0%87%E8%AE%B0%E4%B8%BA%20noexcept/">noexcept</a> 就可以将旧对象移动过去而不是使用拷贝构造的形式，就如 C++ Primer Plus 中所说：“对大多数程序员来说，右值引用带来的主要好处并非是让他们能够编写使用右值引用的代码，而是能够使用利用右值引用实现移动语义的库代码”。</p>
+<h2 id="右值引用与移动语义"><a class="markdownIt-Anchor" href="#右值引用与移动语义"></a> 右值引用与移动语义</h2>
+<p><strong>先说关系，右值引用的提出是为了实现移动语义，即移动语义是目的，右值引用是手段。</strong></p>
+<ul>
+<li>对于左值与右值一种简单的理解是左值是可以取地址的而右值不可以，右值引用是 C++ 11 中引入的新类型，用于标识字面常量（1，“string”）、表达式（x+y）和函数的按值返回。</li>
+<li><strong>移动语义实现了将一个右值对象的资源转移到当前对象，避免了拷贝构造的开销</strong>；在序列容器类的扩容以及两个对象的 swap 等情况极大提高了效率。</li>
+<li>移动语义主要体现在为某类重写的移动构造函数中，在实现中一般是进行指针值的拷贝然后置空右值对象中对应的指针。进行指针值的拷贝也即浅拷贝，从这点上看移动语义与浅拷贝有点相似，但实际上二者是两个不同的概念：浅拷贝是共享资源，而 move 是独占资源（<strong>窃取后置空原指针</strong>），浅拷贝因共享资源从而可能引发重复析构的问题，而 move 是独占则不会。</li>
+</ul>
+<h2 id="万能引用"><a class="markdownIt-Anchor" href="#万能引用"></a> 万能引用</h2>
+<p>what：即可以接受左值引用也可以接受右值引用的参数类型，写作 <strong>T&amp;&amp;，注意只有当发生自动类型推断（如函数模板的类型自动推导，或 auto 关键字）时 T&amp;&amp; 才表示万能引用，否则只表示右值引用</strong></p>
+<p>how：通过引用折叠实现（只有右值引用的右值引用会折叠成右值引用，其余情况都是折叠成左值引用）：</p>
+<ul>
+<li>T&amp; &amp; -&gt; T&amp;</li>
+<li>T&amp; &amp;&amp; -&gt; T&amp;</li>
+<li>T&amp;&amp; &amp; -&gt; T&amp;</li>
+<li>T&amp;&amp; &amp;&amp; -&gt; T&amp;&amp;</li>
+</ul>
+<p>关于万能引用在我<a target="_blank" rel="noopener" href="https://flash-flash.gitee.io/2021/12/31/C++%2011%20%E4%B8%87%E8%83%BD%E5%BC%95%E7%94%A8/">另一篇博客</a>中有提到。</p>
+<h2 id="完美转发perfect-forwarding"><a class="markdownIt-Anchor" href="#完美转发perfect-forwarding"></a> 完美转发（perfect forwarding）</h2>
+<p>为什么需要完美转发的原因：右值引用本身是一个左值，如将一个右值引用参数传递给某函数 f1，而在该函数中又将该参数传给另一个函数 f2，f2 会在进行实参形参的匹配时会将该参数视为左值，而我们希望无论如何转发该参数都能保持其为右值对象这一特点，因此需要完美转发：通过一个函数将参数继续转交给另一个函数进行处理，原参数可能是右值，可能是左值，如果还能继续保持参数的原有特征，那么它就是完美的。实现上要借助’万能引用’和 <code>std::forward</code>。</p>
+<p>分析实现代码之前先看看 std::remove_reference</p>
+<h3 id="stdremove_reference"><a class="markdownIt-Anchor" href="#stdremove_reference"></a> std::remove_reference</h3>
+<p>std::forward 的实现中用到了 std::remove_reference。std::remove_reference 是 type_traits（类型萃取）之一，由类模板实现。</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs sqf"><span class="hljs-comment">// 1</span><br>template&lt;<span class="hljs-built_in">typename</span> <span class="hljs-variable">_Tp</span>&gt;<br>    struct remove_reference<br>    &#123; typedef <span class="hljs-variable">_Tp</span>   <span class="hljs-built_in">type</span>; &#125;;<br><br><span class="hljs-comment">// 2</span><br>template&lt;<span class="hljs-built_in">typename</span> <span class="hljs-variable">_Tp</span>&gt;<br>    struct remove_reference&lt;<span class="hljs-variable">_Tp</span>&amp;&gt;<br>    &#123; typedef <span class="hljs-variable">_Tp</span>   <span class="hljs-built_in">type</span>; &#125;;<br><br><span class="hljs-comment">// 3</span><br>template&lt;<span class="hljs-built_in">typename</span> <span class="hljs-variable">_Tp</span>&gt;<br>    struct remove_reference&lt;<span class="hljs-variable">_Tp</span>&amp;&amp;&gt;<br>    &#123; typedef <span class="hljs-variable">_Tp</span>   <span class="hljs-built_in">type</span>; &#125;;<br></code></pre></td></tr></table></figure>
+<p>1 接受原始类型，2 、3 作为 1 的特化接受 lvalue-ref、 rvalue-ref。当 remove_reference 模板实例化后该模板中定义的类型 <code>type</code> 就具化为模板参数的原始类型</p>
+<h3 id="stdforward-代码解析"><a class="markdownIt-Anchor" href="#stdforward-代码解析"></a> std::forward 代码解析</h3>
+<p>std::forward 是一个函数模板，针对转发左值和转发右值有不同的重载。</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs sqf"><span class="hljs-comment">// 转发左值</span><br>template&lt;<span class="hljs-built_in">typename</span> <span class="hljs-variable">_Tp</span>&gt;<br>    constexpr <span class="hljs-variable">_Tp</span>&amp;&amp;<br>    forward(<span class="hljs-built_in">typename</span> std::remove_reference&lt;<span class="hljs-variable">_Tp</span>&gt;::<span class="hljs-built_in">type</span>&amp; <span class="hljs-variable">__t</span>) noexcept<br>    &#123; return static_cast&lt;<span class="hljs-variable">_Tp</span>&amp;&amp;&gt;(<span class="hljs-variable">__t</span>); &#125;<br><br><span class="hljs-comment">// 转发右值</span><br>template&lt;<span class="hljs-built_in">typename</span> <span class="hljs-variable">_Tp</span>&gt;<br>    constexpr <span class="hljs-variable">_Tp</span>&amp;&amp;<br>    forward(<span class="hljs-built_in">typename</span> std::remove_reference&lt;<span class="hljs-variable">_Tp</span>&gt;::<span class="hljs-built_in">type</span>&amp;&amp; <span class="hljs-variable">__t</span>) noexcept<br>    &#123;<br>      static_assert(!std::is_lvalue_reference&lt;<span class="hljs-variable">_Tp</span>&gt;::value, <span class="hljs-string">&quot;template argument substituting _Tp is an lvalue reference type&quot;</span>);<br>      return static_cast&lt;<span class="hljs-variable">_Tp</span>&amp;&amp;&gt;(<span class="hljs-variable">__t</span>);<br>    &#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>返回值类型：都是 constexpr _Tp&amp;&amp;，常量表达式可在编译期确定，_Tp&amp;&amp; 是一个万能引用。</li>
+<li>接收参数：用 remove_reference 得到参数的原始类型；转发左值版本给参数加上左值引用，转发右值版本给参数加上右值引用。</li>
+<li>内部实现：两个重载的实现上基本一致，都利用 static_cast 将参数转化为左值引用或者右值引用，返回语句都是 <code>return static_cast&lt;_Tp&amp;&amp;&gt;(__t);</code>，这里用到了引用折叠的性质。略有不同的是转发右值的重载中多了一个 static_assert 在编译时避免将右值引用 forward 为左值引用。刚开始看到转发右值的版本中有 static_assert 而转发左值的版本中没有时还不太理解，后来在 Stack Overflow 上找到了一个类似的<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10335916/c11-why-is-static-assert-in-stdforward-necessary">提问</a>，转发右值的版本中的 static_assert 是为了避免类似 forward&lt;string&amp;&gt;(string())）的情况。即不允许将一个“纯右值”转发为左值；但是允许将左值转发为右值，实际上这正是 ‘std::move()’ 做的事情。这其实是设计理念方面的问题，具体参见<a target="_blank" rel="noopener" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2951.html">这里</a>。</li>
+</ul>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016041544">我理解的右值引用、移动语义和完美转发</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10335916/c11-why-is-static-assert-in-stdforward-necessary">c++11: why is static_assert in std::forward necessary?</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2951.html">forward</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/C/">C++</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/11/%E9%80%9A%E8%BF%87%20GitHub%20Action%20%E8%87%AA%E5%8A%A8%E5%8F%91%E5%B8%83%20Maven%20%E5%8C%85%E5%88%B0%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">通过 GitHub Action 自动发布 Maven 包到中央仓库</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/01/21/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E8%BF%87%E7%A8%8B/">
+                        <span class="hidden-mobile">函数调用的详细过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

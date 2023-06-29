@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>Windows 上为 uSockets 搭建开发环境 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/photo-1640878814804-9770284a5345.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Windows 上为 uSockets 搭建开发环境">
+              
+                Windows 上为 uSockets 搭建开发环境
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-04-17 09:34" pubdate>
+        2022年4月17日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.2k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      15
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Windows 上为 uSockets 搭建开发环境</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>前两天为 uWebSockets 增加了服务端的 unix domain socket 支持，联系了作者是否愿意接受我的 PR，得到的<a target="_blank" rel="noopener" href="https://github.com/uNetworking/uWebSockets/discussions/1438#discussioncomment-2570789">回复</a>是需要能够跨平台并且客户端也需要支持。于是打算尝试在 Windows 上跑起来这个项目，然后在其上增加 unix domain socket 支持。搭建环境的过程很艰辛，花了我整整一天多的时间，C/C++ 开发还是在 Linux 下比较舒服。。。</p>
+<h2 id="过程"><a class="markdownIt-Anchor" href="#过程"></a> 过程</h2>
+<h3 id="af_unix-windows-sdk"><a class="markdownIt-Anchor" href="#af_unix-windows-sdk"></a> AF_UNIX &amp;&amp; Windows SDK</h3>
+<p>Windows 后来支持了unix domain socket，需要下来安装 SDK 才能体验这项特性，具体可以看这篇<a target="_blank" rel="noopener" href="https://devblogs.microsoft.com/commandline/af_unix-comes-to-windows/">博客</a>，最新的 SDK 要 3 个 G，在网上搜了以前的版本，1 个 G 多点，这样也不用下太久。安装完之后就可以找到 <code>afunix.h</code> 头文件了。具体的 example 在微软的另一篇<a target="_blank" rel="noopener" href="https://devblogs.microsoft.com/commandline/windowswsl-interop-with-af_unix/">博客</a>里。</p>
+<h3 id="vcpkg"><a class="markdownIt-Anchor" href="#vcpkg"></a> vcpkg</h3>
+<p>C/C++ 免不了要依赖第三方库，如果每一项依赖都得由自己手动编译安装就很繁琐了。vcpkg 是一个跨平台的包管理工具，安装步骤在<a target="_blank" rel="noopener" href="https://github.com/microsoft/vcpkg/blob/master/README_zh_CN.md#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B-windows">这里</a>。我在安装完之后下载 libuv 的过程中遇到这个错误：<code>Error: in triplet x64-windows: Unable to find a valid Visual Studio instance</code>，一番 Google 之后解决了，需要在为 Visual Studio 安装 English language 以及安装一个组件：<strong>C++ CMake tools for Windows</strong>。具体看<a target="_blank" rel="noopener" href="https://otland.net/threads/compiling-tfs-with-vcpkg-unable-to-find-a-valid-visual-studio-instance.279856/">这里</a>。</p>
+<h3 id="工具链"><a class="markdownIt-Anchor" href="#工具链"></a> 工具链</h3>
+<p>VS 的工具链和 GNU 的不同，GNU 的 g++ 和 gcc 在 VS 中都是 cl，命令格式也不一样，比如 g++ 中指定 include 目录是 -I<code>path</code>，cl 中是 /I<code>path</code>，-std=c<ins>17 在 cl 中是 /std:c</ins>17。。。一开始不知道这些差异，总是在 cl 中习惯性地写上 g++ 的命令格式导致出现了很多莫名其妙的问题。</p>
+<p>make 运行 uSockets 中的 Makefile 时还报错找不到 <code>CC</code>，后来看了 Makefile 后知道 <code>CC</code> 是里面定义的一个变量，代指编译器。解决方法是在 make 命令中显示指明 <code>CC</code>：make CC=gcc.exe，但是这样编译出来的是一个个 .o 文件(linux 下的文件格式，Windows 中对应的是 .obj)，并且还报错找不到 <code>uv.h</code>，后来灵光一现把命令换成 <code>make CC=cl.exe</code> 就编译出 .obj 了，由于 Makefile 中没有为 Windows 定义把 .obj 打包成静态链接库的命令，所以我手动把编译出来的 .obj 打包成一个 .lib 了，步骤参考这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/lixiangminghate/article/details/78943496">博客</a>。这里还有一个坑，VS 中有 link.exe，Git 中也有，而且在我的环境变量设置中 Git 的路径是靠前的，结果执行 link 的时候报错 <code>/usr/bin/link: extra operand</code>，接着在命令行中显示指定 VS 的 link 路径后执行打包命令就成功了，得知原因后把 Git 的路径挪到 VS 后面，这样每次执行 link 的时候就不用显示指定路径了。</p>
+<h3 id="环境变量的设置"><a class="markdownIt-Anchor" href="#环境变量的设置"></a> 环境变量的设置</h3>
+<p>编译的过程总是遇到找不到头文件以及运行时找不到动态链接的问题，猜想应该是环境变量的问题，参考了这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43997331/article/details/104764873">博客</a>，设置了一系列环境变量之后就 OK 了。下面是我的环境变量设置：</p>
+<p>头文件：<code>INCLUDE</code></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">E</span>:\WindowsSDK\Lib\<span class="hljs-number">10</span>.<span class="hljs-number">0</span>.<span class="hljs-number">20344</span>.<span class="hljs-number">0</span>\um\x64<br><span class="hljs-attribute">E</span>:\WindowsSDK\Lib\<span class="hljs-number">10</span>.<span class="hljs-number">0</span>.<span class="hljs-number">20344</span>.<span class="hljs-number">0</span>\ucrt\x64<br><span class="hljs-attribute">D</span>:\developmentTools\VisualStudio2022\VC\Tools\MSVC\<span class="hljs-number">14</span>.<span class="hljs-number">31</span>.<span class="hljs-number">31103</span>\lib\x64<br><span class="hljs-attribute">D</span>:\environment\vcpkg\installed\x64-windows\lib<br></code></pre></td></tr></table></figure>
+<p>静态链接库文：<code>LIB</code></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">E</span>:\WindowsSDK\Lib\<span class="hljs-number">10</span>.<span class="hljs-number">0</span>.<span class="hljs-number">20344</span>.<span class="hljs-number">0</span>\um\x64<br><span class="hljs-attribute">E</span>:\WindowsSDK\Lib\<span class="hljs-number">10</span>.<span class="hljs-number">0</span>.<span class="hljs-number">20344</span>.<span class="hljs-number">0</span>\ucrt\x64<br><span class="hljs-attribute">D</span>:\developmentTools\VisualStudio2022\VC\Tools\MSVC\<span class="hljs-number">14</span>.<span class="hljs-number">31</span>.<span class="hljs-number">31103</span>\lib\x64<br><span class="hljs-attribute">D</span>:\environment\vcpkg\installed\x64-windows\lib<br></code></pre></td></tr></table></figure>
+<p>动态链接库：在 <code>Path</code> 中新增 vcpkg 存放 .dll 的路径<br />
+<code>D:\environment\vcpkg\installed\x64-windows\bin</code></p>
+<h3 id="机器体系结构不匹配"><a class="markdownIt-Anchor" href="#机器体系结构不匹配"></a> 机器体系结构不匹配</h3>
+<p>在 CLion 中运行的时候总是报错<code>“模块计算机类型“x64”与目标计算机类型“X86”</code>的错误，我的机器是 x64 的，这实在让人迷惑，我设置在 CMake 中设置了一系列指令指定机器类型和编译器以及链接器的路径，结果还是得到一样或者反过来的错误。。。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cmake"><span class="hljs-keyword">set</span>(CMAKE_EXE_LINKER_FLAGS <span class="hljs-string">&quot;/machine:x64&quot;</span>)<br><br><span class="hljs-keyword">set</span>(CMAKE_C_COMPILER <span class="hljs-string">&quot;D:/developmentTools/VisualStudio2022/VC/Tools/MSVC/14.31.31103/bin/Hostx64/x64/cl.exe&quot;</span>)<br><span class="hljs-keyword">set</span>(CMAKE_CXX_COMPILER <span class="hljs-string">&quot;D:/developmentTools/VisualStudio2022/VC/Tools/MSVC/14.31.31103/bin/Hostx64/x64/cl.exe&quot;</span>)<br><span class="hljs-keyword">set</span>(CMAKE_RC_COMPILER <span class="hljs-string">&quot;E:/WindowsSDK/bin/10.0.20344.0/x64/rc.exe&quot;</span>)<br><span class="hljs-keyword">set</span>(CMAKE_MT_COMPILER <span class="hljs-string">&quot;E:/WindowsSDK/bin/10.0.20344.0/x64/mt.exe&quot;</span>)<br><span class="hljs-keyword">SET</span>(CMAKE_C_LINK_EXECUTABLE <span class="hljs-string">&quot;D:/developmentTools/VisualStudio2022/VC/Tools/MSVC/14.31.31103/bin/Hostx64/x64/link.exe&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>后面想着去看看 CLion 中 toolchain 的设置，结果发现是 VS 的 Architecture 默认是 x86，换成 amd64 后就可以了。</p>
+<h3 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h3>
+<p>这个过程可谓是一波 N 折。。。不过最后成功在 CLion 中跑起来的时候心情还是很激动的。。。至于宇宙最强的 Visual Studio，我是真的不会用。。。。。。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/uNetworking/uSockets">uSockets</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43997331/article/details/104764873">在Windows命令行中使用cl.exe</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lixiangminghate/article/details/78943496">obj文件打包为静态库，静态库中抽取obj文件</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwang.me/2020/02/06/check-dll-type/">Windows 中查看库文件（lib 或 dll）是 32 位还是 64 位</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/C/">C++</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">环境搭建</a>
+                    
+                      <a class="hover-with-bg" href="/tags/GSoC/">GSoC</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/21/GSoC%202022%20Series%201/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">GSoC 2022 Series - 1</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/27/uWebsockets%20%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85/">
+                        <span class="hidden-mobile">uWebsockets 编译安装</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

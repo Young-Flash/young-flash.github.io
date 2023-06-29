@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>为图数据库 Nebula Graph 对接 JDBC 协议中期报告 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/photo-1639050642315-6b3ba06a5e59.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="为图数据库 Nebula Graph 对接 JDBC 协议中期报告">
+              
+                为图数据库 Nebula Graph 对接 JDBC 协议中期报告
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-08-09 09:42" pubdate>
+        2021年8月9日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      26
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">为图数据库 Nebula Graph 对接 JDBC 协议中期报告</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>文章收录于 <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/wUPfZgzZSRR-C6JLP8mAxg">开源之夏官方公众号</a> 及 <a target="_blank" rel="noopener" href="https://nebula-graph.com.cn/posts/what-is-nebula-jdbc/">Nebula Graph 博客栏目</a></p>
+<p><a target="_blank" rel="noopener" href="https://summer.iscas.ac.cn/#/homepage?lang=en">开源之夏</a>：<strong>开源软件供应链点亮计划 - 暑期 2021</strong> 是由中国科学院软件研究所与 openEuler 社区共同举办的一项面向高校学生的暑期活动，旨在鼓励在校学生积极参与开源软件的开发维护，促进优秀开源软件社区的蓬勃发展。中科院联合包括 Nebula Graph 在内的国内各大开源社区，针对重要开源软件的开发与维护提供项目，并向全球高校学生开放报名。学生在自由选择项目后，与社区导师沟通实现方案并撰写项目计划书。被选中的学生将在社区导师指导下，按计划完成开发工作，并将成果贡献给社区。</p>
+<h2 id="1-项目信息"><a class="markdownIt-Anchor" href="#1-项目信息"></a> 1. <strong>项目信息</strong></h2>
+<h3 id="11-项目编号"><a class="markdownIt-Anchor" href="#11-项目编号"></a> 1.1. 项目编号</h3>
+<pre><code>210360225
+</code></pre>
+<h3 id="12-项目详情"><a class="markdownIt-Anchor" href="#12-项目详情"></a> 1.2. 项目详情</h3>
+<p>图数据库 Nebula Graph 支持 JDBC 协议：让 Nebula Graph 可以对接 JDBC 协议，实现 Nebula JDBC driver，实现 JDBC 的相关接口。要求：用户可直接使用 JDBC 驱动操作 Nebula 服务，项目 repo 有自动运行的单元测试。</p>
+<h3 id="13-nebula-graph-简介"><a class="markdownIt-Anchor" href="#13-nebula-graph-简介"></a> 1.3. Nebula Graph 简介</h3>
+<p>一个可靠的分布式、线性扩容、性能高效的图数据库；世界上唯一能够容纳千亿个顶点和万亿条边，并提供毫秒级查询延时的图数据库解决方案。</p>
+<p>Nebula Graph 特性：</p>
+<ul>
+<li><strong>开源</strong>：致力于与 <a target="_blank" rel="noopener" href="https://discuss.nebula-graph.com.cn/">社区合作</a> 普及及促进图数据库的发展;</li>
+<li><strong>安全</strong>：具有基于角色的权限控制 <a target="_blank" rel="noopener" href="https://nebula-graph.com.cn/posts/access-control-design-code-nebula-graph/">权限控制</a> ，授权才能访问;</li>
+<li><strong>扩展性</strong>：Nebula Graph 支持多种类型 <a target="_blank" rel="noopener" href="https://nebula-graph.io/cn/posts/nebula-graph-storage-engine-overview/">存储引擎</a> 查询语言也可以拓展支持新的算法;</li>
+<li><strong>高性能</strong>：Nebula Graph 在维持高吞吐量的同时依旧能做到 <a target="_blank" rel="noopener" href="https://discuss.nebula-graph.com.cn/t/topic/782/5">低时延的读写</a>;</li>
+<li><strong>扩容</strong>：基于shared-nothing <a target="_blank" rel="noopener" href="https://nebula-graph.io/cn/posts/nebula-graph-architecture-overview/">分布式架</a> Nebula Graph 支持线性扩容;</li>
+<li><strong>兼容</strong>: openCypher：逐步兼容 <a target="_blank" rel="noopener" href="https://docs.nebula-graph.com.cn/2.0/2.quick-start/0.FAQ/#opencypher">openCypher9</a> ，Cypher 用户可轻松上手 Nebula Graph;</li>
+<li><strong>高可用</strong>:Nebula Graph 支持多种类型<a target="_blank" rel="noopener" href="https://nebula-graph.io/cn/posts/introduction-to-snapshot-in-nebula-graph/">快照</a>方式实现数据恢复，保证在局部失败的情况下服务的高可用性;</li>
+<li><strong>2.0 GA</strong>：一线互联网大厂诸如京东、美团、小红书在生产环境使用 Nebula Graph，<a target="_blank" rel="noopener" href="https://space.bilibili.com/472621355/channel/detail?cid=175657">应用的场景</a>.</li>
+</ul>
+<p>Nebula Graph 具有活跃的社区与及时的技术支持，这是<a target="_blank" rel="noopener" href="https://nebula-graph.com.cn/">官网</a>和<a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-graph">Github仓库</a>，欢迎关注及使用 Nebula Graph，一起成为 Nebula Graph 的 contributor，为图数据库的发展贡献力量！！！</p>
+<h2 id="2-项目落地"><a class="markdownIt-Anchor" href="#2-项目落地"></a> 2. <strong>项目落地</strong></h2>
+<h3 id="21-方案描述"><a class="markdownIt-Anchor" href="#21-方案描述"></a> 2.1. 方案描述：</h3>
+<p><strong>前期</strong>了解 Nebula Graph 相关功能，掌握其基本使用；调研JDBC的驱动开发， 阅读JDBC规范文档，了解一些需要实现的接口；<strong>中期</strong>参考 Neo4j 的 <a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-jdbc">neo4j-jdbc</a> 实现，克隆 <a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-java">nebula-java</a> 项目, 学习源码，了解项目代码的主要逻辑和代码风格；<strong>后期</strong>利用已有的轮子 <a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-java">nebula-java</a> 实现与数据库的通信，编写代码为 Nebula Graph 实现 JDBC 的相关接口， 编写单元测试。</p>
+<h3 id="22-实现描述"><a class="markdownIt-Anchor" href="#22-实现描述"></a> 2.2. 实现描述</h3>
+<p>这个项目实现的思路很清晰：implements JDBC 规范中的一系列接口 (主要位于 java.sql 包中)，实现接口中的方法。JDBC 规范中所有的类加起来需要实现的方法有好几百个。JDBC 主要面向的数据库是传统的关系型数据库 (RDB)，而 Nebula Graph 作为新一代的图数据库，比起久经发展的关系型数据库来说没有它那么完备的功能特性，但是又比关系型数据库多出许多新的特点，所以 JDBC 规范中的方法对于 Nebula Graph 而言既有多余(不需要真正实现)也有不足(需要实现但是没有在相关接口中定义)</p>
+<p>在具体的实现中，定义出一些抽象类直接 implements  规范中的主要接口，再定义出具体的实现类实现接口中一些重要的方法，这样一来实现类中的方法在阅读时不会显得很杂很乱。对于接口中需要实现的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">for</span>( method :  接口的方法 )&#123;<br>    <span class="hljs-keyword">if</span>(method BELONG_TO  不需要具体实现的方法)&#123;<br>        <span class="hljs-comment">// 比如 Statement::getGeneratedKeys()</span><br>        在该抽象类中 Override，方法体中抛出一个SQLFeatureNotSupportedException;<br>    &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(method BELONG_TO 需要实现但是不是核心方法)&#123;<br>        <span class="hljs-comment">// 比如 Statement::isClosed()</span><br>        在该抽象类中 Override；<br>    &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(method BELONG_TO 需要实现且是核心方法)&#123;<br>        <span class="hljs-comment">// 比如 Statement::execute(String nGql)</span><br>        在具体实现类中 Override<br>    &#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(method BELONG_TO 在接口中没有定义但是需要实现)&#123;<br>        <span class="hljs-comment">// 比如 NebulaResult::getNode getEdge getPath (点,边,路径是图数据库特有概念)</span><br>        在具体实现类中实现<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>项目中主要的一些 implements  和 extends 关系如下：(蓝色实线是类之间的 extends 关系，绿色实线是接口之间的 implements 关系，绿色虚线是抽象类与接口之间的 implements 关系)</p>
+<p><img src="/img/blog_pic/2021/nebula-jdbc%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84.png" srcset="/img/loading.gif" alt="nebula-jdbc项目架构" /></p>
+<p><strong>工作流程及类中主要方法分析</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 用户首先通过 NebulaDriver 注册驱动，其中有 NebulaPool 属性，用于获取 Session 与数据库通信</span><br><span class="hljs-comment">// NebulaDriver 中提供两个构造函数，无参构造函数配置默认的 NebulaPool，接收一个 Properties 类型参数的构造函数可以自定义 NebulaPool 配置</span><br><br><span class="hljs-keyword">public</span> <span class="hljs-title function_">NebulaDriver</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> SQLException &#123;<br>    <span class="hljs-built_in">this</span>.setDefaultPoolProperties();<br>    <span class="hljs-built_in">this</span>.initNebulaPool();<br>    <span class="hljs-comment">// 将自身注册到 DriverManager</span><br>    DriverManager.registerDriver(<span class="hljs-built_in">this</span>);<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-title function_">NebulaDriver</span><span class="hljs-params">(Properties poolProperties)</span> <span class="hljs-keyword">throws</span> SQLException &#123;<br>    <span class="hljs-built_in">this</span>.poolProperties = poolProperties;<br>    <span class="hljs-built_in">this</span>.initNebulaPool();<br>    <span class="hljs-comment">// 将自身注册到 DriverManager</span><br>    DriverManager.registerDriver(<span class="hljs-built_in">this</span>);<br>&#125;<br><br><span class="hljs-comment">// 注册驱动后用户可以 DriverManager::getConnection(String url) 获取连接。在 NebulaConnection 的构造函数中会通过 NebulaDriver 中的 NebulaPool 获取 Session 接着连接访问在 url 中指定的图空间</span><br><br><span class="hljs-comment">// 获取到 Connection 后用户可以用 Connection::createStatement 和 Connection::prepareStatement 拿到 Statement 或者 PreparedStatement 对象，调用其中的 execute 方法向数据库发送命令，数据库执行此命令后的结果会封装在 NebulaResult 中，再调用其中各种获取数据的方法可以得到不同数据类型的数据</span><br><br><span class="hljs-comment">// 目前 NebulaResult 中实现的获取数据方法有以下这些，Nebula Graph 中不同的数据类型都有对应实现</span><br><span class="hljs-keyword">public</span> String <span class="hljs-title function_">getString</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getInt</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> <span class="hljs-type">long</span> <span class="hljs-title function_">getLong</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">getBoolean</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">getDouble</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> java.sql.Date <span class="hljs-title function_">getDate</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> java.sql.Time <span class="hljs-title function_">getTime</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> DateTimeWrapper <span class="hljs-title function_">getDateTime</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> Node <span class="hljs-title function_">getNode</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> Relationship <span class="hljs-title function_">getEdge</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> PathWrapper <span class="hljs-title function_">getPath</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> List <span class="hljs-title function_">getList</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> Set <span class="hljs-title function_">getSet</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">public</span> Map <span class="hljs-title function_">getMap</span><span class="hljs-params">()</span>;<br></code></pre></td></tr></table></figure>
+<h2 id="3-项目进度"><a class="markdownIt-Anchor" href="#3-项目进度"></a> 3. <strong>项目进度</strong></h2>
+<h3 id="31-已完成工作"><a class="markdownIt-Anchor" href="#31-已完成工作"></a> 3.1. 已完成工作：</h3>
+<ul>
+<li>部署 Nebula Graph 并掌握其基本使用；</li>
+<li>阅读 <a target="_blank" rel="noopener" href="https://download.oracle.com/otn-pub/jcp/jdbc-4_2-mrel2-spec/jdbc4.2-fr-spec.pdf">JDBC 规范文档</a> , 明确实现要求；</li>
+<li>学习  <a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-java">nebula-java</a> 源码；</li>
+<li>（较计划提前）完成以下实现：</li>
+</ul>
+<p><img src="/img/blog_pic/2021/%E5%B7%B2%E5%AE%8C%E6%88%90.png" srcset="/img/loading.gif" alt="" /></p>
+<h3 id="32-遇到的问题及解决方案"><a class="markdownIt-Anchor" href="#32-遇到的问题及解决方案"></a> 3.2. 遇到的问题及解决方案：</h3>
+<ul>
+<li>如何与数据库通信的问题：</li>
+</ul>
+<p>项目前期过程中不知道如何与数据库通信，在研究友商 Neo4j 的  <a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-jdbc">neo4j-jdbc</a> 实现后利用 Http 框架通过 Nebula Graph 的 api （粗糙地）实现了与数据库的通信；完成后与导师联系询问该想法是否可行，导师告诉我可以用已有的轮子  <a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-java">nebula-java</a>，通过 rpc 与 Nebula Graph 通信。</p>
+<ul>
+<li>关于获取 Connection 的问题：</li>
+</ul>
+<p>NebulaPoolConfig 类中的一些参数是可配置的，我的想法是以在连接字符串中指定的形式进行配置，如：“jdbc:nebula://ip:port/graphSpace?maxConnsSize=10&amp;reconnect=true”。咨询导师后导师建议可以让用户获取连接的时候，支持两种接口，一种是用默认配置，一种是让用户指定配置，如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// default configuration</span><br>DriverManager.getConnection(url, username, password);<br><br><span class="hljs-comment">// customized configuration</span><br>DriverManager.getConnection(url,config);<br></code></pre></td></tr></table></figure>
+<ul>
+<li>关于 PreparedStatement 的问题：</li>
+</ul>
+<p>关系型数据库支持查询语句预编译的功能，PreparedStatement  可以向 DBMS 发送 SQL 让其预编译然后再传参数，提高了性能且能防止 SQL　注入攻击；目前 Nebula Graph 暂无此功能， 所以在本地解析 nGql 中的占位符再将参数填充进去，本质上与 Statement 相同。</p>
+<ul>
+<li>nebula-java 版本问题：</li>
+</ul>
+<p>一开始在项目中引入的依赖的 2.0.0 版本，在一次查询中发现其路径返回结果与控制台返回结果不一致，咨询导师后发现这是这个版本中的 bug，改用最新的 2.0.0-SNAPSHOT 版本。</p>
+<ul>
+<li>updateCount 问题：</li>
+</ul>
+<p>JDBC 接口中一些方法要求返回值是收到此方法影响的数据量 (updateCount) ，但目前服务端没有 updateCount 统计返回给用户。假如用户一条插入语句里面同时插入多个点或者多条边，这里面可能有部分成功，但服务端只会返回告诉用户失败了，但是其实用户可能能查到部分数据。这个 updateCount 按照0返回，然后在接口添加注释说明不支持。</p>
+<ul>
+<li>NebulaPool 初始化问题：</li>
+</ul>
+<p>一开始我是在初始化 NebulaConnection 时初始化 NebulaPool 再获取 Session，而且搞混了对于 NebulaPool 的配置和对于 Session 的配置。这样的话用户每次获取 Connection 时都会重新初始化 NebulaPool，是不合理的，我提交代码到 Gitlab 导师 review 后指出了我的错误，建议我将 NebulaPool 的 初始化和关闭移到 NebulaDriver 中，再提高默认配置和自定义配置两种方式初始化 NebulaPool。</p>
+<h3 id="33-后续工作安排"><a class="markdownIt-Anchor" href="#33-后续工作安排"></a> 3.3. 后续工作安排：</h3>
+<ul>
+<li>完成接口中应该实现但未实现的方法；</li>
+<li>完成单元测试。</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%BC%80%E6%BA%90%E4%B9%8B%E5%A4%8F/">开源之夏</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/10/04/%E5%AE%9E%E7%8E%B0%20LRU%20%E7%BC%93%E5%AD%98/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">实现 LRU 缓存</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/06/10/Windows%2010%20%E4%BD%BF%E7%94%A8%20Docker%20%E5%AE%89%E8%A3%85%20Nebula%20Graph/">
+                        <span class="hidden-mobile">Windows 10 使用 Docker 安装 Nebula Graph</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,571 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>hardware_concurrency() 返回值是物理核数还是虚拟核数 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/photo-1625315714730-d0830cd368bd.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="hardware_concurrency() 返回值是物理核数还是虚拟核数">
+              
+                hardware_concurrency() 返回值是物理核数还是虚拟核数
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-01-08 17:37" pubdate>
+        2022年1月8日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.2k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      15
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">hardware_concurrency() 返回值是物理核数还是虚拟核数</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>早上面试的时候被问到项目中多线程的实现方式以及<strong>线程池中线程数量的该如何确定？<strong>我回答了 hardware_concurrency()，接着被追问 hardware_concurrency() 返回值是物理核数还是虚拟核数？我说名字里有 hardware，应该是物理核数，没想到猜错了哈哈哈哈哈面试官说是</strong>虚拟核数</strong>.</p>
+<h2 id="hardware_concurrency"><a class="markdownIt-Anchor" href="#hardware_concurrency"></a> hardware_concurrency()</h2>
+<p><strong>cplusplus 上对于 hardware_concurrency() 的描述：</strong></p>
+<blockquote>
+<ul>
+<li>Returns the number of hardware thread contexts.</li>
+<li>The interpretation of this value is system- and implementation- specific, and may not be exact, but just an approximation.</li>
+<li>Note that this does not need to match the actual number of processors or cores available in the system: A system can support multiple threads per processing unit, or restrict the access to its resources to the program.</li>
+<li>If this value is not computable or well defined, the function returns 0.</li>
+</ul>
+</blockquote>
+<p>第一点提到其返回值是硬件线程上下文的数量，第三点提到该返回值可能并不与真是的处理器或者核数相一致（因为系统可以在一个处理单元上运行多个线程）。</p>
+<p><strong>StackOverflow 上有一个<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/27971195/handle-stdthreadhardware-concurrency">问题</a>提到这个方法，其中有一个回答：</strong></p>
+<blockquote>
+<p>Even when hardware_concurrency is implemented, it cannot be relied as a direct mapping to the number of cores. This is what the standard says it returns - The number of hardware thread contexts. And goes on to state - This value should only be considered to be a hint If your machine has hyperthreading enabled, it’s entirely possible the value returned will be 2x the number of cores. If you want a reliable answer, you’ll need to use whatever facilities your OS provides. – PraetorianJan 15 '15 at 19:21</p>
+</blockquote>
+<p>说到该返回值 cannot be relied as a direct mapping to the number of core，也就是不直接与（物理）核数对应，如果开启了超线程技术，那么返回值将会是（物理）核数的 2 倍，也就是虚拟核数。</p>
+<h2 id="物理核-虚拟核"><a class="markdownIt-Anchor" href="#物理核-虚拟核"></a> 物理核、虚拟核</h2>
+<p>实际上，核的概念分为 物理核（Physical Core） 和 逻辑核（Logical Core），在我们说多核处理器的时候，其实是有二义性的——我们不知道讲的是多个 物理核 还是 逻辑核 。</p>
+<ul>
+<li>物理核
+<ul>
+<li>物理上、真实存在的 核（Core），可以在硬件层面上看到数量的 核（Core）</li>
+</ul>
+</li>
+<li>逻辑核
+<ul>
+<li>理解上，只是逻辑上存在的 核（Core） 无法通过硬件层面判断出数量</li>
+<li>实际上，基于 Intel 的 超线程技术（Hyper-Threading） 将一个物理核拆分成两个逻辑核，更加高效地执行 CPU 指令以及利用 L1 缓存</li>
+</ul>
+</li>
+</ul>
+<p>除此之外，无论是 Linux / Mac 还是 Windows 的资源管理器，我们看到的数量都是逻辑核的数量，计算公式大致如下：</p>
+<ul>
+<li>物理核数 = 物理核数（Dual Core = 双核 / Quad-Core = 四核）</li>
+<li>逻辑核数 = 物理核数 or 物理核数 x 2（开启了 HT）</li>
+</ul>
+<h2 id="超线程-hyper-threading"><a class="markdownIt-Anchor" href="#超线程-hyper-threading"></a> 超线程 Hyper-Threading</h2>
+<p>有时候我们谈到双核四线程的时候，实质上谈到的就是超线程技术（Hyper-Threading），超线程技术是一种硬件创新，允许一个以上的线程运行在每个核心，更多的线程意味着可以并行地完成更多的工作。</p>
+<blockquote>
+<ul>
+<li>How does Hyper-Threading work? When Intel® Hyper-Threading Technology is active, the CPU exposes two execution contexts per physical core. This means that one physical core now works like two “logical cores” that can handle different software threads. The ten-core Intel® Core™ i9-10900K processor, for example, has 20 threads when Hyper-Threading is enabled.</li>
+<li>Two logical cores can work through tasks more efficiently than a traditional single-threaded core. By taking advantage of idle time when the core would formerly be waiting for other tasks to complete, Intel® Hyper-Threading Technology improves CPU throughput (by up to 30% in server applications3).</li>
+</ul>
+</blockquote>
+<p><img src="/img/blog_pic/2022/%E5%8D%95%E6%A0%B8%E5%8F%8C%E7%BA%BF%E7%A8%8B.png" srcset="/img/loading.gif" alt="单核双线程" /></p>
+<p>一个支持超线程技术的 CPU 物理核心，里面会有两套独立的寄存器但共用剩下的计算单元和缓存，比如 ALU（算术逻辑单元） 和 L1 / L2 缓存。反之，若不支持超线程的 CPU 物理核心中只会有一套寄存器，也能通过这个图直观的理解超线程带来的一些效率提升。从一个运行在开启了超线程的 CPU 的操作系统的角度来看，此时它管理着两个 CPU（逻辑上的），这两个逻辑 cpu 在同一个物理 cpu 上运行。 <strong>不过这样并不会产生两倍于传统处理器的处理能力，也不可能提供完全的并行处理能力，因为它们不能作为两个完整的独立的处理器来执行。</strong></p>
+<p><img src="/img/blog_pic/2022/%E5%A4%9A%E6%A0%B8%E5%A4%9A%E7%BA%BF%E7%A8%8B.png" srcset="/img/loading.gif" alt="多核多线程" /></p>
+<p>四核八线程就是将四个单核两线程的物理核心装在一个芯片（Chip） 上。</p>
+<h2 id="在-windows-系统上开启关闭虚拟化hyper-v"><a class="markdownIt-Anchor" href="#在-windows-系统上开启关闭虚拟化hyper-v"></a> 在 Windows 系统上开启/关闭虚拟化（Hyper-V）</h2>
+<p>左图是在我的电脑上开启了 Hyper-V，右图是女朋友的电脑，没有开启 Hyper-V。同样是四个内核，开了 Hyper-V 后资源管理器中显示的逻辑处理器数量翻倍了。</p>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/%E5%BC%80%E5%90%AF%E8%99%9A%E6%8B%9F%E5%8C%96.png" srcset="/img/loading.gif" alt="开启虚拟化" /></th>
+<th><img src="/img/blog_pic/2022/%E5%85%B3%E9%97%AD%E8%99%9A%E6%8B%9F%E5%8C%96.png" srcset="/img/loading.gif" alt="关闭虚拟化" /></th>
+</tr>
+</thead>
+</table>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.cplusplus.com/reference/thread/thread/hardware_concurrency/">cplusplus-reference-hardware_concurrency</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/27971195/handle-stdthreadhardware-concurrency">Handle std:🧵:hardware_concurrency()</a></li>
+<li><a target="_blank" rel="noopener" href="https://davex.pw/2020/09/18/cpu-physical-and-logical-cores-and-hyper-threding/">了解 CPU 之物理核、逻辑核、超线程</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/gaming/resources/hyper-threading.html">What Is Hyper-Threading?</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.daniloaz.com/en/differences-between-physical-cpu-vs-logical-cpu-vs-core-vs-thread-vs-socket/">Differences between physical CPU vs logical CPU vs Core vs Thread vs Socket</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/01/21/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E8%BF%87%E7%A8%8B/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">函数调用的详细过程</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/01/03/TCP%20%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%9C%80%E8%A6%81%E6%94%B6%E5%88%B0%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%20ACK%20%E5%90%8E%E6%89%8D%E8%83%BD%20Closed/">
+                        <span class="hidden-mobile">TCP 四次挥手：为什么服务端需要收到客户端的 ACK 后才能 Closed</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>通过 GitHub Action 自动发布 Maven 包到中央仓库 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/photo-1639050642315-6b3ba06a5e59.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="通过 GitHub Action 自动发布 Maven 包到中央仓库">
+              
+                通过 GitHub Action 自动发布 Maven 包到中央仓库
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-03-11 13:35" pubdate>
+        2022年3月11日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      31
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">通过 GitHub Action 自动发布 Maven 包到中央仓库</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>前阵子微软 leader round 面试的时候聊到我做的的开源项目 <a target="_blank" rel="noopener" href="https://github.com/nebula-contrib/nebula-jdbc">nebula-jdbc</a>，面试官问到了这个项目的被使用情况，我知道这个项目有人在用（因为有人在 issue 中提问了哈哈哈哈）但是不知道有多少人在用，所以当时只回答了这个 repo 的 watch、fork 和 star 数量，因为我并没有把这个项目打成 jar 包发布到 maven 中央仓库。事后想想确实有必要打包发布，一方面方便用户使用，一方面也能看到被使用的情况。</p>
+<h2 id="流程"><a class="markdownIt-Anchor" href="#流程"></a> 流程</h2>
+<h3 id="配置-gpg"><a class="markdownIt-Anchor" href="#配置-gpg"></a> 配置 GPG</h3>
+<p>GnuPG，简称 GPG，是 GPG 标准的一个免费实现。不管是 Linux 还是 Windows 平台，都可以使用。GPGneng 可以为文件生成签名、管理密匙以及验证签名。发布到Maven仓库中的所有文件都要使用 GPG 签名保证不被篡改。具体的配置过程可以参考这篇<a target="_blank" rel="noopener" href="https://www.timberkito.com/?p=141#hwpDMCYX">博客</a>。最终需要用到 GPG 密钥（导出的一长串）和 Passphrase（自己在生成密钥过程中设置的密码）</p>
+<h3 id="注册-sonatype-账号"><a class="markdownIt-Anchor" href="#注册-sonatype-账号"></a> 注册 Sonatype 账号</h3>
+<p>不能直接向 maven 中央仓库中发包，需要发布到 Nexus 然后由它定期自动同步到 maven 的中央仓库。首先需要<a href="https://link.zhihu.com/?target=https%3A//issues.sonatype.org/secure/Signup%21default.jspa">注册 Sonatype 账号</a>，然后提交一个 issue 说明你要发布的这个 jar 包的信息，具体过程可以参考这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36838191/article/details/81027586">博客</a>。一开始我不知道还有这个步骤，然后发包时就报了 403 forBiden 的错误。。。</p>
+<h3 id="github-action"><a class="markdownIt-Anchor" href="#github-action"></a> GitHub Action</h3>
+<p><a target="_blank" rel="noopener" href="https://docs.github.com/cn/actions">GitHub Action</a> 是 GitHub 推出的实现 CI/CD（持续集成、持续交付/部署）的手段。可以创建工作流程来构建和测试存储库的每个拉取请求，或将合并的拉取请求部署到生产环境，由 GitHub 提供虚拟机来运行你在 workflow 文件中写好的执行流程。</p>
+<p>GitHub Action 可以针对不同的时间设置不同的处理流程，这次我要实现的目标是在 release 一个新版本时自动打包发布，所以监听的是 released 事件，处理流程复用了 samuelmeuli/action-maven-publish。事实上 GitHub Action 能做的事情远不止如此，比如还可以在新 pr 提交的时候自动跑一遍测试用例以及做一些定时任务之类的…</p>
+<p>首先在仓库的 Actions 中 new workflow，工作流的 yml 文件内容如下：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs yml"><span class="hljs-comment"># 相当于脚本用途的一个声明</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">Maven</span> <span class="hljs-string">Central</span> <span class="hljs-string">Repo</span> <span class="hljs-string">Deployment</span><br><span class="hljs-comment"># 触发脚本的事件  这里为发布release之后触发</span><br><span class="hljs-attr">on:</span><br>  <span class="hljs-attr">release:</span><br>    <span class="hljs-attr">types:</span> [<span class="hljs-string">released</span>]<br><span class="hljs-comment"># 定义一个发行任务</span><br><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">release:</span><br>    <span class="hljs-comment"># 运行处理流程的 OS 环境</span><br>    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-18.04</span><br>    <span class="hljs-attr">steps:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Check</span> <span class="hljs-string">out</span> <span class="hljs-string">Git</span> <span class="hljs-string">repository</span><br>        <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span><br><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Install</span> <span class="hljs-string">Java</span> <span class="hljs-string">and</span> <span class="hljs-string">Maven</span><br>        <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/setup-java@v1</span><br>        <span class="hljs-attr">with:</span><br>          <span class="hljs-attr">java-version:</span> <span class="hljs-number">8</span><br><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Release</span> <span class="hljs-string">Maven</span> <span class="hljs-string">package</span><br>        <span class="hljs-attr">uses:</span> <span class="hljs-string">samuelmeuli/action-maven-publish@v1</span><br>        <span class="hljs-attr">with:</span><br>            <span class="hljs-comment"># 一系列需要的密码</span><br>            <span class="hljs-attr">gpg_private_key:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.GPG_SECRET</span> <span class="hljs-string">&#125;&#125;</span>    <span class="hljs-comment"># GPG 导出的那段长长的密钥</span><br>            <span class="hljs-attr">gpg_passphrase:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.GPG_PASSWORD</span> <span class="hljs-string">&#125;&#125;</span>   <span class="hljs-comment"># 自己设置的 GPG 密码</span><br>            <span class="hljs-attr">nexus_username:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.OSSRH_USER</span> <span class="hljs-string">&#125;&#125;</span>     <span class="hljs-comment"># sonatype 用户名（不是邮箱）</span><br>            <span class="hljs-attr">nexus_password:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.OSSRH_PASSWORD</span> <span class="hljs-string">&#125;&#125;</span> <span class="hljs-comment"># sonatype 登录密码</span><br></code></pre></td></tr></table></figure>
+<p>上面提到的一系列密码保存在 repo 的 <code>Settings</code>-&gt;<code>Secrets</code>-&gt;<code>Actios</code>-&gt;<code>Repository secrets</code> 下</p>
+<h3 id="pomxml-配置"><a class="markdownIt-Anchor" href="#pomxml-配置"></a> pom.xml 配置</h3>
+<p>具体可以参考如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">project</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span><br><span class="hljs-tag">         <span class="hljs-attr">xmlns:xsi</span>=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span><br><span class="hljs-tag">         <span class="hljs-attr">xsi:schemaLocation</span>=<span class="hljs-string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">modelVersion</span>&gt;</span>4.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">modelVersion</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">packaging</span>&gt;</span>jar<span class="hljs-tag">&lt;/<span class="hljs-name">packaging</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.github.young-flash<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>flash-GAT<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>4.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">properties</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">maven.compiler.source</span>&gt;</span>1.8<span class="hljs-tag">&lt;/<span class="hljs-name">maven.compiler.source</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">maven.compiler.target</span>&gt;</span>1.8<span class="hljs-tag">&lt;/<span class="hljs-name">maven.compiler.target</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">properties</span>&gt;</span><br><br>    <span class="hljs-comment">&lt;!-- 项目信息 --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">name</span>&gt;</span>Github-Action-Test-By-Flash<span class="hljs-tag">&lt;/<span class="hljs-name">name</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">description</span>&gt;</span>Github-Action-Test-By-Flash<span class="hljs-tag">&lt;/<span class="hljs-name">description</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://github.com/Young-Flash/GitHub-Action-Test<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br><br>    <span class="hljs-comment">&lt;!--  项目地址信息   --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">scm</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">connection</span>&gt;</span>scm:git:https://github.com/Young-Flash/GitHub-Action-Test<span class="hljs-tag">&lt;/<span class="hljs-name">connection</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://github.com/Young-Flash/GitHub-Action-Test.git<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">developerConnection</span>&gt;</span>scm:git:https://github.com/Young-Flash/GitHub-Action-Test<span class="hljs-tag">&lt;/<span class="hljs-name">developerConnection</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">scm</span>&gt;</span><br><br>    <span class="hljs-comment">&lt;!-- licenses 信息    --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">licenses</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">license</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">name</span>&gt;</span>Apache License, Version 2.0<span class="hljs-tag">&lt;/<span class="hljs-name">name</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://www.apache.org/licenses/LICENSE-2.0.txt<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">license</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">licenses</span>&gt;</span><br><br>    <span class="hljs-comment">&lt;!--  开发者信息   --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">developers</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">developer</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">name</span>&gt;</span>Flash<span class="hljs-tag">&lt;/<span class="hljs-name">name</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">email</span>&gt;</span>871946895@qq.com<span class="hljs-tag">&lt;/<span class="hljs-name">email</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">developer</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">developers</span>&gt;</span><br><br>    <span class="hljs-comment">&lt;!--  如果用到了 snapshot 版本的依赖则需要加上下面这个声明    --&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">repositories</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">repository</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>snapshots<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">repository</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">repositories</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span><br>        <span class="hljs-comment">&lt;!--  你的依赖   --&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">profiles</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">profile</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>deploy<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">build</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">plugins</span>&gt;</span><br>                    <span class="hljs-comment">&lt;!-- Javadoc plugin --&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-javadoc-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">doclint</span>&gt;</span>none<span class="hljs-tag">&lt;/<span class="hljs-name">doclint</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>attach-javadocs<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>                                    <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>jar<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>                                <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>                            <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br>                    <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br><br>                    <span class="hljs-comment">&lt;!-- Source plugin --&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-source-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>attach-sources<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>                                    <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>jar-no-fork<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>                                <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>                            <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br>                    <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br><br>                    <span class="hljs-comment">&lt;!-- GPG plugin --&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-gpg-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.6<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>sign-artifacts<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">phase</span>&gt;</span>verify<span class="hljs-tag">&lt;/<span class="hljs-name">phase</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>                                    <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>sign<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>                                <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>                                <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>                                    <span class="hljs-comment">&lt;!-- Prevent `gpg` from using pinentry programs --&gt;</span><br>                                    <span class="hljs-tag">&lt;<span class="hljs-name">gpgArguments</span>&gt;</span><br>                                        <span class="hljs-tag">&lt;<span class="hljs-name">arg</span>&gt;</span>--pinentry-mode<span class="hljs-tag">&lt;/<span class="hljs-name">arg</span>&gt;</span><br>                                        <span class="hljs-tag">&lt;<span class="hljs-name">arg</span>&gt;</span>loopback<span class="hljs-tag">&lt;/<span class="hljs-name">arg</span>&gt;</span><br>                                    <span class="hljs-tag">&lt;/<span class="hljs-name">gpgArguments</span>&gt;</span><br>                                <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>                            <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br>                    <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br>                <span class="hljs-tag">&lt;/<span class="hljs-name">plugins</span>&gt;</span><br>            <span class="hljs-tag">&lt;/<span class="hljs-name">build</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">profile</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">profiles</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">distributionManagement</span>&gt;</span><br>        <span class="hljs-comment">&lt;!-- Central Repository --&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">snapshotRepository</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>ossrh<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">snapshotRepository</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">repository</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>ossrh<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">name</span>&gt;</span>Nexus Release Repository<span class="hljs-tag">&lt;/<span class="hljs-name">name</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://oss.sonatype.org/service/local/staging/deploy/maven2/<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">repository</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">distributionManagement</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">build</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">plugins</span>&gt;</span><br>            <span class="hljs-comment">&lt;!-- Nexus Staging Plugin --&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.sonatype.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>nexus-staging-maven-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.6.8<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">extensions</span>&gt;</span>true<span class="hljs-tag">&lt;/<span class="hljs-name">extensions</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">serverId</span>&gt;</span>ossrh<span class="hljs-tag">&lt;/<span class="hljs-name">serverId</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">nexusUrl</span>&gt;</span>https://s01.oss.sonatype.org<span class="hljs-tag">&lt;/<span class="hljs-name">nexusUrl</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">autoReleaseAfterClose</span>&gt;</span>true<span class="hljs-tag">&lt;/<span class="hljs-name">autoReleaseAfterClose</span>&gt;</span><br>                <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>            <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">plugins</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">build</span>&gt;</span><br><br><span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<h2 id="发布"><a class="markdownIt-Anchor" href="#发布"></a> 发布</h2>
+<p>所有准备工作就绪后就可以尝试发布了，release 一个新版本，此时会自动触发你在 workflow 的 yml 文件中设置的执行流程，具体地运行情况可以在 Actions 中看到，可以会报错，这个就需要看报错信息自己去摸索解决方法了。</p>
+<h2 id="踩坑"><a class="markdownIt-Anchor" href="#踩坑"></a> 踩坑</h2>
+<h3 id="nexus-staging-maven-plugin168deploy-failed-403-forbidden"><a class="markdownIt-Anchor" href="#nexus-staging-maven-plugin168deploy-failed-403-forbidden"></a> “nexus-staging-maven-plugin:1.6.8:deploy failed: 403 - Forbidden”</h3>
+<p>按照其他教程的步骤来，一切配置就绪后发布时遇到这个错误，查了很久都没找到解决方法。后来在这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36838191/article/details/81027586">博客</a>中看到还有一个注册工单的步骤，完成工单后再发布就没问题了。过程中会有社区机器人验证你创建的工单的合法性，比如需要验证你对该 github 账号的所有权（让你建一个指定名字的临时仓库）和 groupId 对应的域名的所有权。</p>
+<h3 id="the-pom-for-is-missing-no-dependency-information-available"><a class="markdownIt-Anchor" href="#the-pom-for-is-missing-no-dependency-information-available"></a> “The POM for … is missing, no dependency information available”</h3>
+<p>在为项目引入依赖后发布时遇到这个错误，原因是我引入的那个依赖是 SNAPSHOT 版本，需要在 pom.xml 中加上 &lt;repository&gt; 声明</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">repositories</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">repository</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>snapshots<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">url</span>&gt;</span>https://oss.sonatype.org/content/repositories/snapshots/<span class="hljs-tag">&lt;/<span class="hljs-name">url</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">repository</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">repositories</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<p>包发布成功后需要一段时间才会同步到中央仓库，发布后成功后过小半天后可以先在 <a target="_blank" rel="noopener" href="https://search.maven.org/">sonatype</a> 上查看</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/45730541/the-pom-for-is-missing-no-dependency-information-available-even-though-it">The POM for … is missing, no dependency information available</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000039716048">使用CI/CD工具Github Action发布jar到Maven中央仓库</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6892965219791093773#heading-3">通过GitHub Action自动部署Maven项目</a></li>
+<li><a target="_blank" rel="noopener" href="https://blogtech.top/2019/12/30/%E5%8F%91%E5%B8%83%E8%87%AA%E5%B7%B1%E7%9A%84%E9%A1%B9%E7%9B%AEJAR%E5%88%B0MAVEN%E4%B8%AD%E5%A4%AE%E4%BB%93%E5%BA%93/">发布自己的项目 JAR 到 MAVEN 中央仓库</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/CI-CD/">CI/CD</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/15/Linux%20%E4%B8%BA%E5%BD%93%E5%89%8D%E7%94%A8%E6%88%B7%E5%AE%89%E8%A3%85%E6%96%B0%E7%89%88%E7%9A%84%20GCC%20%E5%92%8C%20CMake/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux 为当前用户安装新版的 GCC 和 CMake</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/07/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8%E3%80%81%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E3%80%81%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/">
+                        <span class="hidden-mobile">右值引用、移动语义、完美转发</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

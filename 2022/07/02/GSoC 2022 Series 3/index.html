@@ -1,0 +1,549 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>GSoC 2022 Series - 3 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/GSoC.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="GSoC 2022 Series - 3">
+              
+                GSoC 2022 Series - 3
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-07-02 09:34" pubdate>
+        2022年7月2日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      15
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">GSoC 2022 Series - 3</h1>
+            
+            <div class="markdown-body">
+              <h2 id="系列导航"><a class="markdownIt-Anchor" href="#系列导航"></a> 系列导航</h2>
+<ul>
+<li><a href="https://young-flash.github.io/2022/05/21/GSoC%202022%20Series%201/">GSoC 2022 Series - 1</a></li>
+<li><a href="https://young-flash.github.io/2022/05/23/GSoC%202022%20Series%202/">GSoC 2022 Series - 2</a></li>
+<li><a href="https://young-flash.github.io/2022/07/02/GSoC%202022%20Series%203/">GSoC 2022 Series - 3</a></li>
+<li><a href="https://young-flash.github.io/2022/09/08/GSoC%202022%20Series%204/">GSoC 2022 Series - 4</a></li>
+</ul>
+<h2 id="设计与实现"><a class="markdownIt-Anchor" href="#设计与实现"></a> 设计与实现</h2>
+<p>mentor 希望在 rtorrent 中引入 websocket 的同时还保留 scgi。现在 rtorrent 有 3 个线程，我的想法是在一个独立的线程来运行 websocket 服务，届时整个进程中将会有 4 个线程。引入 RpcThreadManager 类来管理 scgi 和 websocket 线程，类中的成员变量是 ThreadWorker 和 WebsocketsThread 的指针，成员方法是 ThreadWorker 类中暴露的 public 方法，这样只需要将 global.h 中的全局变量 worker_thread 的类型从 ThreadWorker 改为 RpcThreadManager 从而不需要改变调用接口的定义。</p>
+<p>利用 uWebsockets 来实现 websocket 服务，所有的逻辑都放在 WebsocketsThread 这个类中，主要的成员变量有：</p>
+<ul>
+<li><code>std::unique_ptr&lt;std::thread&gt; m_websockets_thread</code>:<br />
+当前运行 websocket 服务的线程指针，析构时 join 掉线程</li>
+<li><code>uWS::App* m_websockets_app</code>:<br />
+websocket App 对象，后续调用其 publish 方法向 client 推送通知</li>
+<li><code>std::pair&lt;std::string, int&gt;* listen_info</code>:<br />
+websocket 服务监听方式(unix domain socket 还是 tcp:ip port 以及监听的地址信息</li>
+<li><code>std::vector&lt;uWS::WebSocket&lt;false, true, ConnectionData&gt;*&gt; all_connection</code>:<br />
+保存与所有 client 的连接，析构时 close</li>
+</ul>
+<p>主要的成员变量有：</p>
+<ul>
+<li><code>void start_thread();</code><br />
+初始化 uWS::App 对象并创建线程运行 websocket 服务</li>
+<li><code>void publish_ws_topic(std::string_view topic, std::string_view message);</code><br />
+外部向 client 推送通知的接口</li>
+<li><code>void handle_request(const std::string_view&amp;);</code><br />
+收到 client 的 JSON-RPC 命令后分派给 RpcManager 处理然后返回处理结果</li>
+<li><code>~WebsocketsThread();</code><br />
+关闭掉所有 ws 连接，清理资源，join 掉当前线程</li>
+</ul>
+<h2 id="遇到的问题"><a class="markdownIt-Anchor" href="#遇到的问题"></a> 遇到的问题</h2>
+<h3 id="如何优雅结束进程"><a class="markdownIt-Anchor" href="#如何优雅结束进程"></a> 如何优雅结束进程？</h3>
+<p>每次退出的时候都会阻塞在 <code>m_websockets_thread-&gt;join();</code> 上，按照 uWebsockets 文档的描述，清理掉 App 对象依赖的资源后其 run 方法会自动退出，可是执行了 <code>us_listen_socket_close(0, m_listen_socket);</code> 之后 run 方法还是没有返回。后来尝试了在关闭 socket 之前 close 掉与所有 client 的连接后 run 方法就成功返回了，进而 m_websockets_thread 就能顺利 join 掉了。</p>
+<h3 id="bazel-build"><a class="markdownIt-Anchor" href="#bazel-build"></a> bazel build</h3>
+<p>我是在 windows 上用 wsl 环境开发的。项目中用到了 bazel 构建系统所以我也得支持这种构建方式，运行 bazel build rtorrent 后报错 ERROR: /home/flash/.cache/bazel/_bazel_flash/deb97f29152e01999a06e8171eedc056/external/cares/BUILD.bazel:115:8: Executing genrule @cares//:configure failed: (Exit 127): bash failed: error executing command /bin/bash -c … (remaining 1 argument skipped) <code>/bin/bash: $'\r': command not found</code>。这是 wsl 的锅，参考<a target="_blank" rel="noopener" href="https://askubuntu.com/questions/966488/how-do-i-fix-r-command-not-found-errors-running-bash-scripts-in-wsl">这里</a>用 dos2unix 把有问题的文件格式化之后重新执行 bazel build rtorrent 就成功了</p>
+<h3 id="推送通知到-client-时程序就-segmentation-fault-了"><a class="markdownIt-Anchor" href="#推送通知到-client-时程序就-segmentation-fault-了"></a> 推送通知到 client 时程序就 Segmentation fault 了</h3>
+<p>一开始还以为是不同线程之间内存的访问可见性问题，但是线程之间是共享内存的呀，在创建好 <code>uWS::App</code> 对象后就通过指针保存到 m_websockets_app，而且在 websocket 线程中和外部调用线程中 <code>m_websockets_app</code> 打印出来的指针值都是一样的，为什么一调用方法就出错？？？这个问题困扰了我好久，后来突然想到是不是 publish 的时候 App 还没初始化好？结果还真是！！！知道了原因之后就很好解决了：publish的时候对 m_websockets_app 判空就 OK 了。我在 debug 的时候看到 m_websockets_app 为 NULL 的时候才想到这一点，如果没有想到的话肯定会走不少弯路（其实已经走了不少了）</p>
+<p>想到在 leetcode 用 C++ 做题的时候，如果访问了空指针会给出报错原因</p>
+<p><img src="/img/blog_pic/2022/leetcodeC++%E9%94%99%E8%AF%AF.png" srcset="/img/loading.gif" alt="" /></p>
+<p>如果当时 IDE 在我访问还没初始化的 m_websockets_app 也能给出这样的提示那么我马上就知道问题在哪了。后来 Google 到了 sanitize 编译选项，在访问空指针的测试代码中用<br />
+<code>set(CMAKE_CXX_FLAGS &quot;$&#123;CMAKE_CXX_FLAGS&#125; -fsanitize=null -fsanitize=leak -fsanitize=address&quot;)</code> 这些选项编译就能有类似的提示。但是在 rtorrent 中加入这些编译选项后还是没有，不知道为什么。。。</p>
+<h3 id="hash-string-乱码"><a class="markdownIt-Anchor" href="#hash-string-乱码"></a> hash string 乱码</h3>
+<p>我想在返回消息中带上当前 torrent 的 hash string 给 client 作为判断是针对哪个 torrent 的事件通知，看代码应该是 <code>download-&gt;info()-&gt;hash().str()</code> 这个方法，结果 json 无法解析，打印出来一看是乱码。一开始还在想会不会又是 wsl 的锅，后来放到虚拟机上跑还是一样。最后是从 rpc 命令入手的：发现有一条 “d.hash” 的命令可以返回 torrent 的 hash string，那么 rtorrent 中肯定有处理这条命令的代码，通过在 IDE 中搜索 “d.hash” 找到 src/command_download.cc line 802，发现原来还要 transform 一下才可以：<code>torrent::utils::transform_hex_str(download-&gt;info()-&gt;hash().str())</code></p>
+<h3 id="scgi-和-websocket-监听同一个-socket"><a class="markdownIt-Anchor" href="#scgi-和-websocket-监听同一个-socket"></a> scgi 和 websocket 监听同一个 socket</h3>
+<p>给 mentor 看完代码后 mentor 说能不能让 scgi 和 websocket 监听同一个 socket，后面我去了解到了 <code>SO_REUSEPORT</code> 这个 socket option，在 scgi 中开启后程序可以启动，但是 scgi 服务却不能正常运行，接下来尝试了让一个 tcp echo server 和 websocket 监听在同一个 port 上，发现了消息错乱的现象：websocket 的第一个 http 报文有可能被 tcp echo server 收了，返回的内容自然不是 websocket client 能处理就报错了，二者都是运行在 tcp 之上，不能保证 client 发来的消息被正确的 server 收到。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/GSoC/">GSoC</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/07/29/%E5%BE%AE%E8%BD%AF%E5%AE%9E%E4%B9%A0%E5%B0%8F%E8%AE%B0/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">微软实习小记</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/23/GSoC%202022%20Series%202/">
+                        <span class="hidden-mobile">GSoC 2022 Series - 2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>

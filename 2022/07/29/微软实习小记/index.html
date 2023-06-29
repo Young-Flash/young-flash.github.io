@@ -1,0 +1,568 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>微软实习小记 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/ms3.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="微软实习小记">
+              
+                微软实习小记
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-07-29 15:37" pubdate>
+        2022年7月29日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      995 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      10
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">微软实习小记</h1>
+            
+            <div class="markdown-body">
+              <p>5 月中旬入职，经历了差不多半个月的 remote 后终于到苏州 onsite 了。How time flies，现在实习已经接近尾声了，在微软实习的这段经历会是我宝贵的体验。</p>
+<p>因为疫情还在学校 remote 的时候其实并没有实习的感觉，虽说 mentor 也有在 teams 上和我联系，给我讲实习要做的 task，但不能到实地体验总归还是差点意思。入职两个星期后终于能来到办公室了，线下实地的实习体验才是我真正想要的体验。入职第一天先配了设备，HP 的工作站，32G 内存 + 400G 固态，日常开发足够了，4K 的显示器是我最满意的哈哈哈，一开始由于设备紧张每个实习生只能领一个，后来我死缠烂打找 AA 又要了一个，两个 4K 显示器，一个字就是爽！</p>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms4.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/ms5.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>从大老板朋友圈盗的图</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>组里同事总体来说都比较年轻，好几个都是去年校招入职的，还有几个工作了比较久很有经验的同事，我觉得这个搭配还是很好的，新老搭配，团队有年轻人的活力也有老司机的经验，组里的氛围我挺喜欢的，平时都是一块去饭堂吃饭，大家相处都比较融洽，希望以后正式工作了也能在这么一个团队里哈哈哈。组里的同事都很优秀，好几个海归，也有从腾讯华为跳过来的，我 mentor 是 senior，是个有多年经验的老兵了。mentor 人很好，有什么不懂的或者遇到什么问题请教他都能给我解答，跟我讲了任务后就放手让我去做，没有催进度，都是我自己做了点什么东西后跟他说的，没啥工作压力，应该微软总体来说都是如此吧，当然不排除也有一些比较忙的组，不过我所在的 CMD 部门感觉都还好，没听说过经常加班的情况，五点多去吃饭后有的直接走了，也有的再回办公室待一会儿的，大多晚上 7 点多就都走了；但是偶尔也有比较忙的时候，前段时间看我 mentor 好几天到八九点才走。Anyway，微软在 work life balance 这方面是很有优势的。</p>
+<p><img src="/img/blog_pic/2022/ms-demo.png" srcset="/img/loading.gif" alt="" /></p>
+<p>今天在一个 meeting 上做个了 demo 讲了自己实习期间做的任务，第一次全英的汇报有些紧张，开始之前 mentor 还来和我说不用紧张随便讲哈哈哈。准备得还算充分，前一天晚上把自己要的东西过了几遍所以汇报的时候比较顺利，结束后还有同事夸我口语不错哈哈哈。虽然只有不到十分钟的时间，但这次汇报足够让我印象深刻了。组里的业务需要和外国同事对接，所以平时同事们开会也经常会讲英文，这也是在外企工作的一个特点吧，我觉得有这种机会还是挺不错的，是提升自己英语的好机会。</p>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms6.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/ms7.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+</table>
+<p>放点随手拍的照片吧</p>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms1.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/ms12.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+</table>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms8.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/ms9.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+</table>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms10.jpg" srcset="/img/loading.gif" alt="茶水间的花" /></th>
+<th><img src="/img/blog_pic/2022/ms11.jpg" srcset="/img/loading.gif" alt="不是说 win 11 不会蓝屏吗？？？" /></th>
+</tr>
+</thead>
+</table>
+ <!-- 差不多还有两个星期实习就结束了，希望秋招顺利毕业也顺利哈哈哈哈 -->
+<center>更新</center>
+<p>聚散终有别，每段旅途、每段人生经历都有终点。而我的微软实习经历也走到了最后，还剩下最后两三天在想离职待办的时候心中有了要离开这里的感觉，在这里的三个月是很美好的一段经历，想起要离开了难免有些不舍。last day 的中午时候 manager 请了我和 mentor 吃饭，下午的时候我点了 18 杯奶茶请同事们喝，做个最后的留念哈哈哈，晚上再和几个同事在园区里的小馆子里吃了顿饭。</p>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/%E7%95%99%E8%A8%80.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/ms%E6%90%9C%E7%B4%A2%E6%88%AA%E5%9B%BE.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+</table>
+<table>
+<thead>
+<tr>
+<th><img src="/img/blog_pic/2022/ms%E5%A4%A7%E6%A5%BC.jpg" srcset="/img/loading.gif" alt="" /></th>
+<th><img src="/img/blog_pic/2022/%E6%9C%88%E4%BA%AE%E6%B9%BE.jpg" srcset="/img/loading.gif" alt="" /></th>
+</tr>
+</thead>
+</table>
+<p>至此，微软实习经历结束，will I back？</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%B7%A5%E4%BD%9C/">工作</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/09/08/GSoC%202022%20Series%204/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">GSoC 2022 Series - 4</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/07/02/GSoC%202022%20Series%203/">
+                        <span class="hidden-mobile">GSoC 2022 Series - 3</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>
