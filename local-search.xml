@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>成为 Apache Committer</title>
+    <link href="/2023/09/09/%E6%88%90%E4%B8%BA%20Apache%20Committer/"/>
+    <url>/2023/09/09/%E6%88%90%E4%B8%BA%20Apache%20Committer/</url>
+    
+    <content type="html"><![CDATA[<p>8 月 30 号晚上，突然收到一封来自 <a href="https://github.com/apache/incubator-opendal">OpenDAL</a> PPMC 的 Committer 邀请邮件，这对于我来说完全是意外之喜。在我眼中 Apache 是一个很高大上的组织，Apache Committer 是一个很厉害的程序员群体，没想到有一天我也能加入其中；以至于我在收到邀请时兴奋地手舞足蹈，当时本来还打算自己做饭吃的我当即叫了个外卖犒劳一下自己哈哈哈哈哈。</p><p><img src="/img/blog_pic/2023/opendal_welcome.png" alt="" /></p><p>今天设置好了我的 Apache 账号，link 了我的 GitHub 账号，正式加入了 ASF org，还通过 Apache 邮箱获取到了 JetBrains 全家桶的 license，正好续上了我毕业即到期的学生包 license 😄<br /><img src="/img/blog_pic/2023/ASF_invitation.png" alt="" /><br /><img src="/img/blog_pic/2023/jetbrains_all_products_pack.png" alt="" /></p><p>我在 <a href="https://young-flash.github.io/2023/05/03/OpenDAL%20%E7%A4%BE%E5%8C%BA%E5%8F%82%E4%B8%8E%E8%AE%B0%E5%BD%95/">OpenDAL 社区参与记录</a> 中提到我给 OpenDAL 贡献的初衷是为了在实际项目中学习 Rust，当时对于开源的看法是“用爱发电，就图一乐”，也没想着能有成为 Apache Committer 之类的收获。那时候 OpenDAL 还只有 500+ star，也还没正式进入 Apache 孵化器，后来在 OpenDAL 各位贡献者的努力下它进入了 Apache 孵化器。</p><p>接着“<strong>命运的齿轮开始悄然转动</strong>”，我通过 @xuanwo 的推特得知 OpenDAL 在 OSPP 2023 中有两个 slot，我之前参加过 OSPP 2021，所以得知这个消息的时候觉得挺巧合的，后面就开始关注这两个 slot 会是什么样的项目；当时心里想的是刚好我对于 OpenDAL 有一些了解，如果它发布到 OSPP 2023 上的项目比较合适的话那么我就申请，要是不合适的话就不打算参与了，毕竟当时临近毕业，在毕业论文的压力我也不想花费很多时间精力去从零了解陌生的社区和新的项目，在<a href="https://mp.weixin.qq.com/s/o5w03sM22pX9_Lo0JUOf-Q">开源之夏的专访</a>中我提到参与 OSPP 2023 有些偶然就是这个原因。结果是我很幸运地中选了 OpenDAL 的 Implementing a Webdav Compatibility Layer for Oay 这个项目，实现了硕士三年 OSPP 2021 &amp; GSoC 2022 &amp; OSPP 2023 的“大满贯” 😄</p><p>参与 OSPP 2021 的时候我连在 GitHub 上提 PR 的流程都不清楚，如今两年过去了，我已经能够在开源社区里熟练地和其他开发者协作，这些经历让我提高了代码能力也认识了一些很优秀的程序员，知道了这个世界上有一些很 cool 的事情正在发生着，更 cool 的是我也参与到了这些事情中。成为 Apache Committer 对我来说是一份荣誉，是对我参与开源这件事情的肯定，如果很多年后我还能够继续行走在开源的道路上的话，一定是这些肯定给我的动力。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>开源</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>OSPP 2021 &amp; GSoC 2022 参与经历</title>
     <link href="/2023/06/29/OSPP%202021%20&amp;%20GSoC%202022%20%E5%8F%82%E4%B8%8E%E7%BB%8F%E5%8E%86/"/>
     <url>/2023/06/29/OSPP%202021%20&amp;%20GSoC%202022%20%E5%8F%82%E4%B8%8E%E7%BB%8F%E5%8E%86/</url>
@@ -300,9 +319,9 @@
       
       <tag>环境搭建</tag>
       
-      <tag>websocket</tag>
-      
       <tag>GSoC</tag>
+      
+      <tag>websocket</tag>
       
     </tags>
     
@@ -747,9 +766,9 @@
       
       <tag>开源</tag>
       
-      <tag>开源之夏</tag>
-      
       <tag>环境搭建</tag>
+      
+      <tag>开源之夏</tag>
       
     </tags>
     

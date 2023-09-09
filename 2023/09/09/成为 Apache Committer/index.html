@@ -19,7 +19,7 @@
   <meta name="description" content="">
   <meta name="author" content="Flash">
   <meta name="keywords" content="">
-  <title>Windows 10 使用 Docker 安装 Nebula Graph - Blog of Flash</title>
+  <title>成为 Apache Committer - Blog of Flash</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
 
@@ -159,14 +159,14 @@
 </nav>
 
     <div class="banner intro-2" id="background" parallax=true
-         style="background: url('/img/decorative_pic/photo-1595433261422-cd66de8368a3.jpg') no-repeat center center;
+         style="background: url('/img/decorative_pic/ASF.png') no-repeat center center;
            background-size: cover;">
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="Windows 10 使用 Docker 安装 Nebula Graph">
+            <span class="h2" id="subtitle" title="成为 Apache Committer">
               
-                Windows 10 使用 Docker 安装 Nebula Graph
+                成为 Apache Committer
               
             </span>
 
@@ -181,8 +181,8 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2021-06-10 09:13" pubdate>
-        2021年6月10日 上午
+      <time datetime="2023-09-09 15:45" pubdate>
+        2023年9月9日 下午
       </time>
     </span>
   
@@ -193,7 +193,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      541 字
+      706 字
     </span>
   
 
@@ -203,7 +203,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      6
+      7
        分钟
     </span>
   
@@ -233,66 +233,17 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Windows 10 使用 Docker 安装 Nebula Graph</h1>
+            <h1 style="display: none">成为 Apache Committer</h1>
             
             <div class="markdown-body">
-              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>这篇文章记录了我是如何在 Windows 上通过 Docker 安装 NG 的，感觉 NG 的安装比其他数据库麻烦一些，所以记录一下。可以结合这篇文章和官网的<a target="_blank" rel="noopener" href="https://docs.nebula-graph.com.cn/2.0.1/2.quick-start/2.deploy-nebula-graph-with-docker-compose/">教程</a>进行安装。</p>
-<h2 id="安装-docker"><a class="markdownIt-Anchor" href="#安装-docker"></a> 安装 Docker</h2>
-<p>Docker 官网下载对应的安装包 <a target="_blank" rel="noopener" href="https://docs.docker.com/engine/install/">Install Docker Engine</a>，Windows 的 Docker Desktop 自带了 Docker Compose 所以不需要额外安装。具体的安装可以参考</p>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/736984429364">安装 Hyper-V</a></li>
-<li><a target="_blank" rel="noopener" href="https://jingyan.baidu.com/article/ac6a9a5e1f164a2b653eac33.html">开启 Hyper-V</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/74291add4ee5">安装 Docker</a></li>
-</ol>
-<h2 id="clone-仓库"><a class="markdownIt-Anchor" href="#clone-仓库"></a> clone 仓库</h2>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-docker-compose">nebula-docker-compose</a> 数据库的后端（推荐v2.0.0分支）</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/vesoft-inc/nebula-graph-studio">nebula-graph-studio</a> （前端，master 分支）</li>
-</ol>
-<h2 id="安装并开启-nebula-docker-compose后端"><a class="markdownIt-Anchor" href="#安装并开启-nebula-docker-compose后端"></a> 安装并开启 nebula-docker-compose（后端）</h2>
-<ul>
-<li>来到 nebula-docker-compose 所在文件夹，按 shift 同时右键，选择打开 powershell</li>
-<li>输入命令 <code>docker-compose up -d</code> (由于网络原因可能有些资源下载失败, 多试几次就好），成功之后在 Docker 中会多出一些镜像</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-1.png" srcset="/img/loading.gif" alt="" /></p>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-2.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>上一步完成之后输入命令 <code>docker run --rm -ti --network nebula-docker-compose_nebula-net --entrypoint=/bin/sh vesoft/nebula-console:v2-nightly</code> （这里的<code>nebula-docker-compose_nebula-net</code>是网络的名字，可以在命令行使用 <code>docker network ls</code> 查看网络）</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-3.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>输入 <code>nebula-console -u user -p password --address=graphd --port=9669</code> （graphd不用改），成功之后输入 <code>show hosts</code> 检查 <code>nebula-storaged</code> 进程状态</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-4.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>这时可以在命令行中来到 nebula-docker-compose 所在文件夹, 输入 <code>docker-compose ps</code> 列出 Nebula Graph 服务的状态和端口</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-5.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>此时后端算是成功部署并且开启了，停止服务可以使用 <code>docker-compose down</code></li>
-</ul>
-<h2 id="安装并开启-nebula-graph-studio前端"><a class="markdownIt-Anchor" href="#安装并开启-nebula-graph-studio前端"></a> 安装并开启 nebula-graph-studio（前端）</h2>
-<ul>
-<li>来到 nebula-graph-studio 所在文件夹，同样在此打开 powershell，docker-compose pull 拉取镜像（一次拉取不成功就多试几次，拉完之后 Docker 中同样会出现这些镜像）</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-6.png" srcset="/img/loading.gif" alt="" /></p>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-7.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>继续输入命令 <code>docker-compose up -d</code> 开启 Studio 服务</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-8.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>启动成功后，在浏览器地址栏输入 <code>http://ip address:7001</code>，在浏览器窗口中能看到以下登录界面，表示已经成功部署并启动 Studio。</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-9.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>host 填你的 ip 地址:9669 (命令行中用 ipconfig 可以常看，好像不能填127.0.0.1)，用户名 user, 密码 password</li>
-</ul>
-<p><img src="/img/blog_pic/2022/NG%E5%AE%89%E8%A3%85-10.png" srcset="/img/loading.gif" alt="" /></p>
-<ul>
-<li>接下来可以按照官网的<a target="_blank" rel="noopener" href="https://docs.nebula-graph.com.cn/2.0.1/2.quick-start/4.nebula-graph-crud/">教程</a>练习 CRUD</li>
-</ul>
+              <p>8 月 30 号晚上，突然收到一封来自 <a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal">OpenDAL</a> PPMC 的 Committer 邀请邮件，这对于我来说完全是意外之喜。在我眼中 Apache 是一个很高大上的组织，Apache Committer 是一个很厉害的程序员群体，没想到有一天我也能加入其中；以至于我在收到邀请时兴奋地手舞足蹈，当时本来还打算自己做饭吃的我当即叫了个外卖犒劳一下自己哈哈哈哈哈。</p>
+<p><img src="/img/blog_pic/2023/opendal_welcome.png" srcset="/img/loading.gif" alt="" /></p>
+<p>今天设置好了我的 Apache 账号，link 了我的 GitHub 账号，正式加入了 ASF org，还通过 Apache 邮箱获取到了 JetBrains 全家桶的 license，正好续上了我毕业即到期的学生包 license 😄<br />
+<img src="/img/blog_pic/2023/ASF_invitation.png" srcset="/img/loading.gif" alt="" /><br />
+<img src="/img/blog_pic/2023/jetbrains_all_products_pack.png" srcset="/img/loading.gif" alt="" /></p>
+<p>我在 <a href="https://young-flash.github.io/2023/05/03/OpenDAL%20%E7%A4%BE%E5%8C%BA%E5%8F%82%E4%B8%8E%E8%AE%B0%E5%BD%95/">OpenDAL 社区参与记录</a> 中提到我给 OpenDAL 贡献的初衷是为了在实际项目中学习 Rust，当时对于开源的看法是“用爱发电，就图一乐”，也没想着能有成为 Apache Committer 之类的收获。那时候 OpenDAL 还只有 500+ star，也还没正式进入 Apache 孵化器，后来在 OpenDAL 各位贡献者的努力下它进入了 Apache 孵化器。</p>
+<p>接着“<strong>命运的齿轮开始悄然转动</strong>”，我通过 @xuanwo 的推特得知 OpenDAL 在 OSPP 2023 中有两个 slot，我之前参加过 OSPP 2021，所以得知这个消息的时候觉得挺巧合的，后面就开始关注这两个 slot 会是什么样的项目；当时心里想的是刚好我对于 OpenDAL 有一些了解，如果它发布到 OSPP 2023 上的项目比较合适的话那么我就申请，要是不合适的话就不打算参与了，毕竟当时临近毕业，在毕业论文的压力我也不想花费很多时间精力去从零了解陌生的社区和新的项目，在<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/o5w03sM22pX9_Lo0JUOf-Q">开源之夏的专访</a>中我提到参与 OSPP 2023 有些偶然就是这个原因。结果是我很幸运地中选了 OpenDAL 的 Implementing a Webdav Compatibility Layer for Oay 这个项目，实现了硕士三年 OSPP 2021 &amp; GSoC 2022 &amp; OSPP 2023 的“大满贯” 😄</p>
+<p>参与 OSPP 2021 的时候我连在 GitHub 上提 PR 的流程都不清楚，如今两年过去了，我已经能够在开源社区里熟练地和其他开发者协作，这些经历让我提高了代码能力也认识了一些很优秀的程序员，知道了这个世界上有一些很 cool 的事情正在发生着，更 cool 的是我也参与到了这些事情中。成为 Apache Committer 对我来说是一份荣誉，是对我参与开源这件事情的肯定，如果很多年后我还能够继续行走在开源的道路上的话，一定是这些肯定给我的动力。</p>
 
             </div>
             <hr>
@@ -302,21 +253,10 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/">开源</a>
                     
                   </div>
                 
-                
-                  <div class="post-meta">
-                    <i class="iconfont icon-tags"></i>
-                    
-                      <a class="hover-with-bg" href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
-                    
-                      <a class="hover-with-bg" href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">环境搭建</a>
-                    
-                      <a class="hover-with-bg" href="/tags/%E5%BC%80%E6%BA%90%E4%B9%8B%E5%A4%8F/">开源之夏</a>
-                    
-                  </div>
                 
               </div>
               
@@ -327,18 +267,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2021/08/09/%E4%B8%BA%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93%20Nebula%20Graph%20%E5%AF%B9%E6%8E%A5%20JDBC%20%E5%8D%8F%E8%AE%AE%E4%B8%AD%E6%9C%9F%E6%8A%A5%E5%91%8A/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">为图数据库 Nebula Graph 对接 JDBC 协议中期报告</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/04/02/%E5%9C%A8%20IDEA%E4%B8%AD%E9%85%8D%E7%BD%AE%E5%B9%B6%E8%BF%90%E8%A1%8C%E4%B8%BB%E7%AB%99%E4%BB%A3%E7%A0%81/">
-                        <span class="hidden-mobile">在 IDEA 中配置并运行主站代码</span>
+                      <a href="/2023/06/29/OSPP%202021%20&amp;%20GSoC%202022%20%E5%8F%82%E4%B8%8E%E7%BB%8F%E5%8E%86/">
+                        <span class="hidden-mobile">OSPP 2021 & GSoC 2022 参与经历</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
