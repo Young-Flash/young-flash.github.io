@@ -1,0 +1,529 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>初次向 Rust Analyzer 贡献 - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/ra-logo.svg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="初次向 Rust Analyzer 贡献">
+              
+                初次向 Rust Analyzer 贡献
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2023-10-21 12:05" pubdate>
+        2023年10月21日 中午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      24
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">初次向 Rust Analyzer 贡献</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>我写 Rust 用的 IDE 是 VSCode 搭配 Rust Analyzer 插件，二者搭配起来使用体验还是相当不错的。Rust Analyzer 虽然只是 VSCode 生态下的一个插件，但实际上可以看成 Rust 语言的一个 LSP(Language Server Protocol) 完整实现，提供了诸如补全提示、代码诊断、引用查找、跳转到定义等 IDE 常用功能。Rust Analyzer 插件可以分为前端和后端，前端是<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer">代码仓库</a>中 editors/code 路径下的 TypeScript 项目，其余部分属于后端服务实现代码，我在这次贡献中涉及的是后端服务部分，下文中如无说明默认讨论的是 Rust Analyzer 后端服务。</p>
+<p>LSP 只是一个协议，并没有规定实现的形式。Rust Analyzer 由 Rust 语言开发，开发团队为此做了许多工作，比如用 Rust 实现了 Parser、<a target="_blank" rel="noopener" href="https://docs.rs/lsp-server/0.7.4/lsp_server/">lsp_server</a> 等工具。此外，Rust Analyzer 还有详细的<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/tree/master/docs/dev">开发文档</a>，为 new contributor 提供了许多指引说明，，是我见过的开源项目中开发文档最详细的项目之一，甚至还有一个 Rust Analyzer 核心开发者主讲的<a target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PLhb66M_x9UmrqXhQuIpWC5VgTdrGxMx3y">系列视频</a>（虽然我看不太懂听不太懂 🙃）介绍 Rust Analyzer 的工作流程。如果没有这些资料，从上手理解这么一个庞大的项目到能提 PR 解决某个小问题对我来说应该要花费更多的时间精力，再次感慨详细的开发文档对于 new contributor 加入社区的重要性。</p>
+<h2 id="入坑"><a class="markdownIt-Anchor" href="#入坑"></a> 入坑</h2>
+<p>每天都在使用 IDE，我对于 IDE 是如何实现这些功能是比较好奇的，某天心血来潮去 Rust Analyzer 的项目仓库逛逛，浏览了一遍 issue，发现 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/issues/12977">Feature request: if x.is_some() -&gt; if let Some(_tmp) = x</a> 这个我能看懂的 issue，于是打算从这个 issue 入手，通过 learning by doing 的方式去学习一下如何开发 Rust Analyzer。这个 issue 描述的是希望在 Rust Analyzer 中增加一个 feature，使得 IDE 能够智能感知并为 <code>Option</code> 以及 <code>Result</code> 类型的某些方法提供自动改写功能，如以下代码所示。其中 ┃ 表示光标的位置，意思是当光标停留在某个特定的 context 位置的时候 IDE 能提供一个自动改写功能。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// before</span><br><span class="hljs-keyword">if</span> x.is_┃<span class="hljs-title function_ invoke__">some</span>() &#123;<br>    ...<br>&#125;<br><br><span class="hljs-comment">// after</span><br><span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> <span class="hljs-variable">Some</span>(┃_tmp) = x &#123;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="过程"><a class="markdownIt-Anchor" href="#过程"></a> 过程</h2>
+<p>我第一版实现的效果是下面这样，当光标停留在 <code>Option</code> 或者 <code>Result</code> 对象的 is_some 或者 is_ok 方法的时候，通过点击小灯泡💡展示当下可选的功能，用户单击选择某个选项即可应用某项功能（在 Rust Analyzer 中这些点击💡后展示的功能称为 <code>assist</code>）。<br />
+<img src="/img/blog_pic/2023/if_is_some_assist.gif" srcset="/img/loading.gif" alt="" /></p>
+<p><img src="/img/blog_pic/2023/if_is_ok_assist.gif" srcset="/img/loading.gif" alt="" /></p>
+<p>一开始我完全不知道从哪里入手，粗略过了一遍文档之后也没有什么头绪。<strong>于是我转变了思路，在已经合并的 PR 里面找是否有完成了类似的事情的 PR</strong>，终于找到了 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/13825">feat: Add unqualify_method_call assist</a> 这个 PR，它同样是提供了当光标在特定 context 位置时的一项可选的 <code>assist</code>。<code>assist</code> 是 Rust Analyzer 的后端服务通过分析当前光标所处的 context 位置所提供的一些“智能”功能，关于小灯泡💡<code>assist</code> Rust Analyzer 的官方博客中有<a target="_blank" rel="noopener" href="https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html">一篇文章</a>做了介绍，我也是在看了这篇博客之后才悟到原来这些 <code>assist</code> 是由服务端提供的而不是预先定义在客户端中的。</p>
+<p>从这个参考 PR 中的 Files changed 中我知道了要增加一项 <code>assist</code> 需要在 <code>crates/ide-assists/src/handlers</code> 下增加一个对应的处理方法，然后注册到 <code>/crates/ide-assists/src/lib.rs</code> 中的 <code>pub(crate) fn all() -&gt; &amp;'static [Handler]</code> 方法，调用链如下。当光标停留的时候，Rust Analyzer 会检查所有在 <code>all()</code> 中注册的 <code>assist</code> 是否可用于当前的 context，如果可以则会将这项 <code>assist</code> 返回给客户端，对应的就是我们点击💡时看到的那些选项。<br />
+<img src="/img/blog_pic/2023/call_stack.png" srcset="/img/loading.gif" alt="" /></p>
+<h2 id="实现"><a class="markdownIt-Anchor" href="#实现"></a> 实现</h2>
+<p>Rust Analyzer 实现了一系列数据结构用于映射用户在 VSCode 中写的代码，参考其他的一些 <code>assist</code>，我在实现 <code>replace_is_method_with_if_let_method</code> 这个 <code>assist</code> 的思路如下：</p>
+<ol>
+<li>首先检查光标当前所处的 context 位置是否是一个 if 表达式，因为我要实现的 <code>assist</code> 是改写 <code>if x.is_some() &#123;&#125;</code>，所以要确保光标所处的位置是一个 if 表达式，这样才有必要进行后续的操作；</li>
+<li>读取 if 表达式中的 condition 部分，检查该 condition 是否是一个方法调用（<code>x.is_some()</code>），如果不是那这就不是我要的操作目标，直接 return 即可；</li>
+<li>如果是一个方法调用的话，这个方法调用的名字是否是 <code>is_some</code> 或者 <code>is_ok</code>，若不是则直接 return；</li>
+<li>确保光标位置的 context 是我要操作的目标代码后，构造出替代后的代码语句实现代码替换。</li>
+</ol>
+<p>得益于 Rust Analyzer 所做的一些抽象，只用 30 多行代码我就完成了 replace_is_method_with_if_let_method 这项 <code>assist</code>。思路其实很简单，而且 Rust Analyzer 也有许多 api 用于代码 context 检查以及信息提取（比如读取某个方法调用的发起对象名以及方法名等），完成的代码如下：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-title function_ invoke__">pub</span>(<span class="hljs-keyword">crate</span>) <span class="hljs-keyword">fn</span> <span class="hljs-title function_">replace_is_method_with_if_let_method</span>(<br>    acc: &amp;<span class="hljs-keyword">mut</span> Assists,<br>    ctx: &amp;AssistContext&lt;<span class="hljs-symbol">&#x27;_</span>&gt;,<br>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Option</span>&lt;()&gt; &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">if_expr</span> = ctx.find_node_at_offset::&lt;ast::IfExpr&gt;()?;<br><br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">cond</span> = if_expr.<span class="hljs-title function_ invoke__">condition</span>()?;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">call_expr</span> = <span class="hljs-keyword">match</span> cond &#123;<br>        ast::Expr::<span class="hljs-title function_ invoke__">MethodCallExpr</span>(call) =&gt; call,<br>        _ =&gt; <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>,<br>    &#125;;<br><br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">name_ref</span> = call_expr.<span class="hljs-title function_ invoke__">name_ref</span>()?;<br>    <span class="hljs-keyword">match</span> name_ref.<span class="hljs-title function_ invoke__">text</span>().<span class="hljs-title function_ invoke__">as_str</span>() &#123;<br>        <span class="hljs-string">&quot;is_some&quot;</span> | <span class="hljs-string">&quot;is_ok&quot;</span> =&gt; &#123;<br>            <span class="hljs-keyword">let</span> <span class="hljs-variable">receiver</span> = call_expr.<span class="hljs-title function_ invoke__">receiver</span>()?;<br>            <span class="hljs-keyword">let</span> <span class="hljs-variable">target</span> = call_expr.<span class="hljs-title function_ invoke__">syntax</span>().<span class="hljs-title function_ invoke__">text_range</span>();<br><br>            <span class="hljs-keyword">let</span> (assist_id, message, text) = <span class="hljs-keyword">if</span> name_ref.<span class="hljs-title function_ invoke__">text</span>() == <span class="hljs-string">&quot;is_some&quot;</span> &#123;<br>                (<span class="hljs-string">&quot;replace_is_some_with_if_let_some&quot;</span>, <span class="hljs-string">&quot;Replace `is_some` with `if let Some`&quot;</span>, <span class="hljs-string">&quot;Some&quot;</span>)<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                (<span class="hljs-string">&quot;replace_is_ok_with_if_let_ok&quot;</span>, <span class="hljs-string">&quot;Replace `is_ok` with `if let Ok`&quot;</span>, <span class="hljs-string">&quot;Ok&quot;</span>)<br>            &#125;;<br><br>            acc.<span class="hljs-title function_ invoke__">add</span>(<span class="hljs-title function_ invoke__">AssistId</span>(assist_id, AssistKind::RefactorRewrite), message, target, |edit| &#123;<br>                <span class="hljs-keyword">let</span> <span class="hljs-variable">replacement</span> = <span class="hljs-built_in">format!</span>(<span class="hljs-string">&quot;let &#123;&#125;(&#123;&#125;) = &#123;&#125;&quot;</span>, text, <span class="hljs-string">&quot;$&#123;0:_tmp&#125;&quot;</span>, receiver);<br>                edit.<span class="hljs-title function_ invoke__">replace</span>(target, replacement);<br>            &#125;)<br>        &#125;<br>        _ =&gt; <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>,<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我认为这次的难点不在于实现思路，而是在于理解项目，知道要在哪里做出什么样的修改，理解 Rust Analyzer 的哪些数据结构对应了用户侧写的代码。关于这一点可以参考 Rust Analyzer 的 Syntax tree 结构，在 VSCode 中写下 rust 代码，按下 ctrl + shift + p 之后在搜索栏中输入 Syntax tree，按下回车之后就能在编辑器右侧得到代码的语法树结构。比如 <code>let x: i32 = 1;</code> 这行代码对应的语法树结果是下面这样的。其中 <code>PATH_TYPE</code>、<code>PATH_SEGMENT</code>、<code>NAME_REF</code> 这些关键字对应了 <code>crates/syntax/src/ast/generated/nodes.rs</code> 中对应的 <code>struct</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">LET_STMT@621..636<br>  LET_KW@621..624 &quot;let&quot;<br>  WHITESPACE@624..625 &quot; &quot;<br>  IDENT_PAT@625..626<br>    NAME@625..626<br>      IDENT@625..626 &quot;x&quot;<br>  COLON@626..627 &quot;:&quot;<br>  WHITESPACE@627..628 &quot; &quot;<br>  PATH_TYPE@628..631<br>    PATH@628..631<br>      PATH_SEGMENT@628..631<br>        NAME_REF@628..631<br>          IDENT@628..631 &quot;i32&quot;<br>  WHITESPACE@631..632 &quot; &quot;<br>  EQ@632..633 &quot;=&quot;<br>  WHITESPACE@633..634 &quot; &quot;<br>  LITERAL@634..635<br>    INT_NUMBER@634..635 &quot;1&quot;<br>  SEMICOLON@635..636 &quot;;&quot;<br></code></pre></td></tr></table></figure>
+<h2 id="细节"><a class="markdownIt-Anchor" href="#细节"></a> 细节</h2>
+<p>在 replace_is_method_with_if_let_method 的初版实现中，完成代码改写后光标并不会自动选中 <code>_tmp</code> 变量。我希望它可以，这样用户在选择应用这项 <code>assist</code> 之后不需要任何鼠标和键盘的操作就可以直接编辑这个变量名。同样的，一开始我不知道如何实现，翻看了其他 <code>assist</code> 的实现似乎也没找到这样的功能，于是问了 ChatGPT，得到了一个能 work 的方法，利用 VSCode 中的 <code>$&#123;0:_tmp&#125;</code> 表达式实现自动范围选择。不过我这里的实现是用粗糙的手动构造方式，或者 Rust Analyzer 里有封装好某个对应的 api 而我还没找到…<br />
+<img src="/img/blog_pic/2023/ask_gpt.png" srcset="/img/loading.gif" alt="" /></p>
+<p><img src="/img/blog_pic/2023/cursor_selection.gif" srcset="/img/loading.gif" alt="" /></p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15743">feat: add replace_is_some_with_if_let_some assist</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15752">feat: add replace_is_ok_with_if_let_ok assist</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15755">fix: make cursor select at _tmp</a></li>
+<li><a target="_blank" rel="noopener" href="https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html">How to Make a 💡</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PLhb66M_x9UmrqXhQuIpWC5VgTdrGxMx3y">Explaining Rust Analyzer</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/Rust-Analyzer/">Rust Analyzer</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/09/%E6%88%90%E4%B8%BA%20Apache%20Committer/">
+                        <span class="hidden-mobile">成为 Apache Committer</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>
