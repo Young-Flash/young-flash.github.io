@@ -19,7 +19,7 @@
   <meta name="description" content="">
   <meta name="author" content="Flash">
   <meta name="keywords" content="">
-  <title>OSPP 2023 结项 - Blog of Flash</title>
+  <title>排查一个 Rust Analyzer 发版后出现的 bug - Blog of Flash</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
 
@@ -159,14 +159,14 @@
 </nav>
 
     <div class="banner intro-2" id="background" parallax=true
-         style="background: url('/img/decorative_pic/OSPP2023.png') no-repeat center center;
+         style="background: url('/img/decorative_pic/ra-logo.svg') no-repeat center center;
            background-size: cover;">
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="OSPP 2023 结项">
+            <span class="h2" id="subtitle" title="排查一个 Rust Analyzer 发版后出现的 bug">
               
-                OSPP 2023 结项
+                排查一个 Rust Analyzer 发版后出现的 bug
               
             </span>
 
@@ -181,8 +181,8 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2023-11-20 22:54" pubdate>
-        2023年11月20日 晚上
+      <time datetime="2023-11-27 22:21" pubdate>
+        2023年11月27日 晚上
       </time>
     </span>
   
@@ -193,7 +193,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      533 字
+      653 字
     </span>
   
 
@@ -203,7 +203,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      7
+      8
        分钟
     </span>
   
@@ -233,56 +233,30 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">OSPP 2023 结项</h1>
+            <h1 style="display: none">排查一个 Rust Analyzer 发版后出现的 bug</h1>
             
             <div class="markdown-body">
-              <blockquote>
-<p>感觉自己变得老油条了，OSPP 2023 的申请报告和结项报告都写得很简短 hhh</p>
-</blockquote>
-<h2 id="相关信息"><a class="markdownIt-Anchor" href="#相关信息"></a> 相关信息</h2>
+              <h2 id="发现问题"><a class="markdownIt-Anchor" href="#发现问题"></a> 发现问题</h2>
+<p>前些天有用户反馈了一个 Rust Analyzer 的 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/issues/15909">issue</a>，说的是在升级到最新版的 RA 后出现了之前没出现的 bug：当一个 trait 的 associate item 提供了默认实现时，struct impl 这个 trait 时如果不提供实现则 RA 会报错如下，而实际上这在 Rust 中是合法的。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">trait</span> <span class="hljs-title class_">Marker</span> &#123;<br>	<span class="hljs-keyword">const</span> FLAG: <span class="hljs-type">bool</span> = <span class="hljs-literal">false</span>;<br>&#125;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Foo</span>;<br><span class="hljs-keyword">impl</span> <span class="hljs-title class_">Marker</span> <span class="hljs-keyword">for</span> <span class="hljs-title class_">Foo</span> &#123;&#125;  <span class="hljs-comment">// &lt;--- error: not all trait items implemented, missing: `const FLAG`</span><br></code></pre></td></tr></table></figure>
+<h2 id="定位问题"><a class="markdownIt-Anchor" href="#定位问题"></a> 定位问题</h2>
+<p>这是一个在最新版中才出现的错误，说明是在这一版中才引入的而不是陈年老 bug。于是我在 GitHub 上 compare 这一版的 commit 和上一版本的 commit，这中间有 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/compare/416e9c856a792ce2214c449677ca0a1f38965248...58de0b130a763f3a2d373f508ac0c18a8e7d0acd?diff=unified">84 个 Files changed</a>, 不算多。<br />
+<img src="/img/blog_pic/2023/diff.png" srcset="/img/loading.gif" alt="" /><br />
+一番浏览下来，发现了这个新增的 crates/ide-diagnostics/src/handlers/trait_impl_missing_assoc_item.rs，从名字上看就很可疑，然后仔细浏览这个文件，发现正是他的问题。这个文件所在的 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15895">PR</a> 增加了一个新的 diagnostic，使得 RA 可以检测出用户在为 struct impl trait 的时候哪些 associate item 没有实现。<br />
+<img src="/img/blog_pic/2023/missing_assoc_item.png" srcset="/img/loading.gif" alt="" /></p>
+<h2 id="解决问题"><a class="markdownIt-Anchor" href="#解决问题"></a> 解决问题</h2>
+<p>这个 PR 是这样<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15895/files#diff-9ded74602cbdce03cc0b20f094e733658a7b43d14ffe0f9167bc79a0851e7e53R665-R704">检测未在 impl 体中实现的 associate item 的</a>，对于 <code>AssocItemId::ConstId(_) =&gt; true,</code> 的处理是直接返回 true，也就是默认为必须在 impl 体中实现而漏掉了在 trait 的定义中可能有为这个 const item 设置默认值的情况。知道了问题所在，剩下的就比较好解决了，直接将针对 const item 的处理修改为 <code>Const::from(id).value(db).is_none()</code>，也就是判断这一项有没有设置了默认值，如果有的话就不必作为 required_items 从而引发错误的 diagnostic</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">required_items</span> = items.<span class="hljs-title function_ invoke__">iter</span>().<span class="hljs-title function_ invoke__">filter</span>(|&amp;(_, assoc)| <span class="hljs-keyword">match</span> *assoc &#123;<br>    AssocItemId::<span class="hljs-title function_ invoke__">FunctionId</span>(it) =&gt; !db.<span class="hljs-title function_ invoke__">function_data</span>(it).<span class="hljs-title function_ invoke__">has_body</span>(),<br>    AssocItemId::<span class="hljs-title function_ invoke__">ConstId</span>(_) =&gt; <span class="hljs-literal">true</span>,<br>    AssocItemId::<span class="hljs-title function_ invoke__">TypeAliasId</span>(it) =&gt; db.<span class="hljs-title function_ invoke__">type_alias_data</span>(it).type_ref.<span class="hljs-title function_ invoke__">is_none</span>(),<br>&#125;);<br></code></pre></td></tr></table></figure>
+<p>接着再为这个小 fix 增加一个验证的 test，跑一遍 cargo test 确保所有测试都没问题之后就可以提 PR 修复了：<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15911">fix: handle default constant values in trait_impl_missing_assoc_item diagnostic</a></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs rust">    <span class="hljs-meta">#[test]</span><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">trait_with_default_value</span>() &#123;<br>    <span class="hljs-title function_ invoke__">check_diagnostics</span>(<br>        <span class="hljs-string">r#&quot;</span><br><span class="hljs-string">trait Marker &#123;</span><br><span class="hljs-string">    const FLAG: bool = false;</span><br><span class="hljs-string">&#125;</span><br><span class="hljs-string">struct Foo;</span><br><span class="hljs-string">impl Marker for Foo &#123;&#125;</span><br><span class="hljs-string">        &quot;#</span>,<br>    )<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="最后"><a class="markdownIt-Anchor" href="#最后"></a> 最后</h2>
+<p>Rust Analyzer 会自动发 nightly releases，这样看来频繁发版还是有好处的，相邻版本之间的 diff 不会太大，发版后引发的 bug 才比较好定位，要是版本之间的 diff 上千个文件我可能就不会一个个去看了哈哈哈</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
 <ul>
-<li>项目名称：Implementing a Webdav Compatibility Layer for Oay</li>
-<li>项目编号：231110459</li>
-<li>项目导师：PsiACE</li>
+<li>原 issue <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/issues/15909">RA reports missing trait item implementation for associated constant with default value: possibly a regression</a></li>
+<li>引入 bug 的 PR <a href="(https://github.com/rust-lang/rust-analyzer/pull/15895)">feat: Diagnose missing assoc items in trait impls</a></li>
+<li>修复 PR <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15911">fix: handle default constant values in trait_impl_missing_assoc_item diagnostic</a></li>
 </ul>
-<h2 id="开发规划"><a class="markdownIt-Anchor" href="#开发规划"></a> 开发规划</h2>
-<ul>
-<li>第一阶段：熟悉项目，理解项目目标，与社区和导师沟通，确定技术/开发路线，做好实际开发之前的设计工作</li>
-<li>第二阶段：实际开发编码</li>
-<li>第三阶段：编写测试、项目文档、准备项目验收材料</li>
-</ul>
-<h2 id="项目交流"><a class="markdownIt-Anchor" href="#项目交流"></a> 项目交流</h2>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://discord.com/channels/1081052318650339399/1109814626046197770">Discord：套磁交流</a></li>
-<li><a target="_blank" rel="noopener" href="https://discord.com/channels/1081052318650339399/1122784753393881179">Discord：开发交流</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/issues/2586">GitHub Issue：开发过程追踪</a></li>
-</ul>
-<h2 id="完成情况"><a class="markdownIt-Anchor" href="#完成情况"></a> 完成情况</h2>
-<ul>
-<li>
-<p>在 Oay <code>frontends-webdav</code> feature 下增加一个结构体 <code>WebDAVFs</code>，实现 dav-server-rs 中的 <code>fs::DavDirEntry</code>、<code>fs::DavFile</code>、<code>fs::DavFileSystem</code>、<code>fs::DavMetaData</code> 等 trait；利用 OpenDAL operator 中的各种数据操作算子（<code>read</code>、<code>write</code>、<code>create_dir</code>、<code>stat</code> 等）实现这些 trait 中的各个接口</p>
-</li>
-<li>
-<p>OpenDAL Oay WebDAV 服务通过 <a target="_blank" rel="noopener" href="http://www.webdav.org/neon/litmus/">litmus</a>（WebDAV 服务器协议遵从性测试套件）行为测试</p>
-  <figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs txt">-&gt; running `http&#x27;:<br>0. init.................. pass<br>1. begin................. pass<br>2. expect100............. pass<br>3. finish................ pass<br>&lt;- summary for `http&#x27;: of 4 tests run: 4 passed, 0 failed. 100.0%<br>-&gt; running `basic&#x27;:<br>0. init.................. pass<br>1. begin................. pass<br>2. options............... pass<br>3. put_get............... pass<br>4. put_get_utf8_segment.. pass<br>5. put_no_parent......... pass<br>6. mkcol_over_plain...... pass<br>7. delete................ pass<br>8. delete_null........... pass<br>9. delete_fragment....... WARNING: DELETE removed collection resource with Request-URI including fragment; unsafe<br>    ...................... pass (with 1 warning)<br>10. mkcol................. pass<br>11. mkcol_again........... pass<br>12. delete_coll........... pass<br>13. mkcol_no_parent....... pass<br>14. mkcol_with_body....... pass<br>15. finish................ pass<br>&lt;- summary for `basic&#x27;: of 16 tests run: 16 passed, 0 failed. 100.0%<br>-&gt; running `copymove&#x27;:<br>0. init.................. pass<br>1. begin................. pass<br>2. copy_init............. pass<br>3. copy_simple........... pass<br>4. copy_overwrite........ pass<br>5. copy_nodestcoll....... pass<br>6. copy_cleanup.......... pass<br>7. copy_coll............. pass<br>8. copy_shallow.......... pass<br>9. move.................. pass<br>10. move_coll............. pass<br>11. move_cleanup.......... pass<br>12. finish................ pass<br>&lt;- summary for `copymove&#x27;: of 13 tests run: 13 passed, 0 failed. 100.0%<br></code></pre></td></tr></table></figure>
-</li>
-<li>
-<p>PR 列表</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2658">#2658 feat(oay): Add webdav basic read impl</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2736">#2736 feat(oay): Add read_dir</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2769">#2769 feat(oay): add write for oay webdav</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2832">#2832 feat: Add create_dir, remove, copy and rename API for oay-webdav</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2857">#2857 feat(oay): impl some method for WebdavMetaData</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2879">#2879 fix(oay): add some error handle</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2944">#2944 fix(oay): pass litmus copymove test</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2957">#2957 CI(oay): add CI for oay-webdav</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/incubator-opendal/pull/2971">#2971 CI(oay): Polish oay webdav test</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="致谢"><a class="markdownIt-Anchor" href="#致谢"></a> 致谢</h2>
-<p>第二次参加 OSPP，既偶然，也幸运。感谢 OSPP 主办方提供的活动平台，以及感谢 OpenDAL 社区在此期间的帮助，最后还要感谢我的导师 @PsiACE 以及 @xuanwo 予以我的指导以及快速且耐心的 code review，谢谢你们 💖</p>
 
             </div>
             <hr>
@@ -293,6 +267,8 @@
                     <i class="iconfont icon-category"></i>
                     
                       <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/Rust-Analyzer/">Rust Analyzer</a>
                     
                   </div>
                 
@@ -306,18 +282,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/11/27/%E6%8E%92%E6%9F%A5%E4%B8%80%E4%B8%AA%20Rust%20Analyzer%20%E5%8F%91%E7%89%88%E5%90%8E%E5%87%BA%E7%8E%B0%E7%9A%84%20bug/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">排查一个 Rust Analyzer 发版后出现的 bug</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/10/21/My%20first%20contribution%20to%20Rust%20Analyzer/">
-                        <span class="hidden-mobile">初次向 Rust Analyzer 贡献</span>
+                      <a href="/2023/11/20/OSPP%202023%20%E7%BB%93%E9%A1%B9/">
+                        <span class="hidden-mobile">OSPP 2023 结项</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
