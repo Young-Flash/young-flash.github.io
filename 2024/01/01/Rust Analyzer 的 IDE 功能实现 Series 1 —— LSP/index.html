@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Flash">
+  <meta name="keywords" content="">
+  <title>Rust Analyzer 的 IDE 功能实现 Series 1 —— LSP - Blog of Flash</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"young-flash.github.io","root":"/","version":"1.8.6","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":10},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"lazyload":{"enable":true,"onlypost":false,"loading_img":"/img/loading.gif","offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname"}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Blog of Flash</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/decorative_pic/ra-logo.svg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Rust Analyzer 的 IDE 功能实现 Series 1 —— LSP">
+              
+                Rust Analyzer 的 IDE 功能实现 Series 1 —— LSP
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-author" aria-hidden="true"></i>
+      Flash
+    </span>
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-01-01 16:46" pubdate>
+        2024年1月1日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.6k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      33
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Rust Analyzer 的 IDE 功能实现 Series 1 —— LSP</h1>
+            
+            <div class="markdown-body">
+              <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
+<p>最近给 Rust Analyzer(RA) 贡献了<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pulls?q=is%3Apr+author%3AYoung-Flash+is%3Aclosed">一些 PR</a>，在这过程中对于 IDE 功能的实现挺感兴趣的，所以有了这篇文章，记录一下我在探索 Rust Analyzer 的 IDE 功能实现的过程。首先想先从 LSP(Language Server Protocol) 在 Rust Analyzer 中的实现开始，后面可能会介绍一些其他内容，比如 RA 服务端的 AST 解析、智能 assist 和 diagnostic quickfix 实现、HIR lowering … （有可能会鸽哈哈哈哈）</p>
+<h2 id="rust-analyzer-介绍"><a class="markdownIt-Anchor" href="#rust-analyzer-介绍"></a> Rust Analyzer 介绍</h2>
+<p><a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer">Rust Analyzer</a> 是由 Rust 社区维护的 Rust 语言 IDE 功能实现，Rust Analyzer 插件搭配 VSCode 可以得到一个现代化的智能 Rust IDE，这或许是目前最流行的 Rust 开发环境。我觉得对于一门新的编程语言，在 VSCode 的强大的编辑器功能上构建 language-specific 的 IDE 功能是兼顾开发成本和用户体验的最佳选择，毕竟从零开发一个 IDE 所需的成本可想而知，而且就算开发出来了短时间内用户体验也比不上经过千锤百炼的 VSCode。</p>
+<p>从用户的角度而言，Rust Analyzer 只是 VSCode 插件市场上的一个插件，安装完 Rust 工具链之后再安装这个插件就能得到开箱即用的 IDE 功能。为了达到这个目的，RA 背后做了不少工作。在它的 GitHub 主页 上的 About 介绍上是这么写的：<strong>A Rust compiler front-end for IDEs</strong>；是的，RA 首先是一个编译器前端，准确的说，它是一个旨在实现 IDE 功能的编译器前端。</p>
+<p>这篇文章主要会聚焦在Rust Analyzer 的 IDE 功能实现中的 LSP 部分，LSP 由微软主导，将语言服务器（一个代码分析工具）和语言客户端（VSCode、Sublime Text…）之间的通信进行了标准化，这样一来插件开发者就可以只写一次代码分析程序，然后在多个编辑器中重用。关于 LSP 的更多内容可以查看<a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/">微软的官方主页</a>。</p>
+<p>Rust Analyzer 的客户端（VSCode 插件）代码和语言服务器代码都在同一个仓库中，editors/code 目录下是 VSCode 客户端插件代码，其余均为服务端代码；本文写作时参考的 Rust Analyzer 代码版本为 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/tree/e1e4626f">e1e4626f</a>。</p>
+<h2 id="client-和-server-的协作方式"><a class="markdownIt-Anchor" href="#client-和-server-的协作方式"></a> Client 和 Server 的协作方式</h2>
+<p>Rust Analyzer 客户端和服务端在同一台机器的不同进程中运行。客户端插件激活后会 <a target="_blank" rel="noopener" href="https://github.com/microsoft/vscode-languageserver-node/blob/3f725d8368ec0c75f390a37e4e159d78bc1527ac/client/src/node/main.ts#L353">spawn 一个进程运行服务端</a>。RA 是 C/S 工作模式，不过却是一个 Server 服务一个 Client，这也是我看了代码之后才知道。于是想着验证一下，我在 VSCode 中打开一个新的 Rust Workspace，用 ps 命令查看活动进程后会发现多出一个新的名为 rust-analyzer 的进程。这点倒是出乎我的意料，我还以为以为是一对多呢🤔。不过一对一也合理，这样其中一个 crash 了也不会影响到其他 Client Workspace。</p>
+<p>Client 和 Server 这两个进程使用 stdio 进行通信，客户端进程向自己的 stdout 发出的请求服务端会在自己的 stdin 接收到，服务端进程向自己的 stdout 返回响应则会被客户端进程从 stdin 接收。当然，RA 服务端还实现了基于 socket 的 TCP 通信方式，未来不排除有本地 client 连接远程 server 的可能。<br />
+<img src="/img/blog_pic/2024/conn.png" srcset="/img/loading.gif" alt="" /></p>
+<h2 id="rust-analyzer-client"><a class="markdownIt-Anchor" href="#rust-analyzer-client"></a> Rust Analyzer Client</h2>
+<p>首先直观地对比一下 Rust Analyzer 客户端和服务端的代码量，客户端 TypeScript 代码不过 5k 行，而服务端 Rust 代码达到了 36w 行。<br />
+<img src="/img/blog_pic/2024/RA-client-code.png" srcset="/img/loading.gif" alt="" /> <img src="/img/blog_pic/2024/RA-server-code.png" srcset="/img/loading.gif" alt="" /></p>
+<p>客户端代码量能做到这么少，是因为 Rust Analyzer 在客户端使用了 <a target="_blank" rel="noopener" href="https://github.com/microsoft/vscode-languageserver-node/tree/main/client">vscode-languageclient</a> 这个库。<code>vscode-languageclient</code> 是一个 Node.js 库，它提供了一种在 VSCode 插件中实现 LSP 客户端的方式。这个库提供了一些高级的抽象，使得插件可以十分容易地与 LSP 服务器进行交互。客户端代码中只要注册某些处理特定 LSP 事件回调函数，<code>vscode-languageclient</code> 会自动在特定的事件发生后发出对应的 LSP 请求并且调用对应的回调函数处理来自服务端的响应。</p>
+<p>比如，当用户在 VS Code 中打开一个 .rs 文件时，这个操作对应一个文件打开事件，<code>vscode-languageclient</code> 则会自动发送 LSP 中的 <a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen">textDocument/didOpen</a> 请求到服务端，服务端收到会分析打开的这个文件，然后通过一个 <a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics">textDocument.publishDiagnostics</a> 响应发送给客户端这个文件上的代码诊断，客户端收到这个响应后 <code>vscode-languageclient</code> 会使用默认的处理逻辑处理这个响应（当然也可以 override 为其他逻辑），也就是把这些代码诊断在编辑器中源代码对应的位置展示出来提示用户；最终用户会看到这样的效果：<br />
+<img src="/img/blog_pic/2024/unused_diag.png" srcset="/img/loading.gif" alt="" /></p>
+<p>可视化客户端和服务端的通信过程，大概是这样的效果：</p>
+<center>
+<img src="/img/blog_pic/2024/client-server.png" srcset="/img/loading.gif" width="70%">
+</center>
+<p>对于 LSP 规范中定义的方法，<code>vscode-languageclient</code> 会自动发送请求和处理响应。对于 LSP 规范中没有定义的方法，插件需要使用 <code>LanguageClient.sendRequest</code> 函数来显式地向服务器发送请求。比如，Rust Analyzer 定义了一些<a target="_blank" rel="noopener" href="https://github.com/Young-Flash/rust-analyzer/blob/master/docs/dev/lsp-extensions.md">扩展方法</a>(<code>Show Syntax Tree</code> 查看当前文件的抽象语法树，<code>Expand macro</code> 查看宏展开后的代码)来提供一些 LSP 规范中没有的功能。<br />
+<img src="/img/blog_pic/2024/ext.png" srcset="/img/loading.gif" alt="" /></p>
+<h2 id="rust-analyzer-server"><a class="markdownIt-Anchor" href="#rust-analyzer-server"></a> Rust Analyzer Server</h2>
+<p>Rust Analyzer 的所有语言服务功能都是在服务端中实现的，为了支持诸如跳转到定义、引用查找、代码诊断等 IDE 功能它实现了一个囊括了 <strong>lexering</strong>、<strong>parsing</strong>、<strong>IR lowering</strong>、<strong>type inferencing</strong> 等阶段的完整的编译器前端，这也是为什么 RA 服务端代码量达到 36w 行的原因。</p>
+<p>服务端的入口点在 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/blob/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/rust-analyzer/src/bin/main.rs#L170">run_server</a>，在这里创建一对 crossbeam_channel 的 Sender 和 Receiver 用于收发消息，spawn 出两个线程分别监听 stdin 和 stdout，来自客户端的请求会通过 stdin 传达到 Receiver 中，服务端处理完请求后会将响应通过 Sender 输出到 stdout 从而被客户端接接收。</p>
+<p>完成收发消息的准备工作后这一对 crossbeam_channel 会被传递到 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/blob/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/rust-analyzer/src/main_loop.rs#L31">main_loop</a> 中，这也是整个服务端的核心。LSP 请求到达 stdin 后，控制流会来到 main_loop 中，根据不同的请求类型（比如要求跳转到定义、提供 inlay hint 等）分派到不同的处理逻辑中。</p>
+<h2 id="一个具体的例子"><a class="markdownIt-Anchor" href="#一个具体的例子"></a> 一个具体的例子</h2>
+<p>以请求当前光标所在源代码位置的可用 CodeAction 为例，假设当前光标所在位置如下（<code>|</code> 所在位置）：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">test</span>() &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">var</span> = <span class="hljs-title function_ invoke__">Some</span>(<span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">if</span> var.<span class="hljs-title function_ invoke__">is_some</span>()| &#123;<br><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>此时客户端会发送一个 <a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction">textDocument/codeAction</a> 类型的 LSP 请求，携带了当前文件以及光标所在具体位置等信息，具体如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;textDocument&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file:///home/flash/projects/ra/src/temp.rs&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  ...<br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>服务端收到后请求并将其序列化为一个内部表示的 lsp_types::CodeActionParams 对象，接着将这个对象代表的请求分派到 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/blob/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/rust-analyzer/src/handlers/request.rs#L1117">handle_code_action</a> 中进行处理，处理过程中发现有两个 CodeAction 适用于光标所在的上下文（为减少篇幅这里我们假设只有两个），一个是将 <code>is_some</code> 写法改为 <code>if let Some</code>，另一个是将 <code>if</code> 写法改为 <code>match</code> 的形式。这两项 CodeAction 分别是在 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/tree/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/ide-assists/src/handlers">crates/ide-assists/src/handlers</a> 目录下的 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/blob/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/ide-assists/src/handlers/replace_is_method_with_if_let_method.rs#L4">replace_is_method_with_if_let_method.rs</a>（这是我给 RA 提的<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pull/15743">第一个 PR</a>） 和 <a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/blob/cf52c4b2b3367ae7355ef23393e2eae1d37de723/crates/ide-assists/src/handlers/replace_if_let_with_match.rs">replace_if_let_with_match.rs</a> 中基于 AST 进行分析得到的，这个目录下还有许多类似的 .rs 文件，每一个都代表了一个特定上下文中可用的 CodeAction 的分析过程，在处理一个 CodeAction 请求时，其中的每一个文件中的逻辑都会被执行，如果这个 CodeAction 适用于当前上下文则会返回 Some 否则则是 None。</p>
+<p><img src="/img/blog_pic/2024/demo.gif" srcset="/img/loading.gif" alt="" />  对于前面举的例子中的两个可用 CodeAction，服务端会返回这样的响应，其中的 <code>title</code> 字段也就是我们点击了💡后所看到的内容。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">[</span><br>  <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Replace `is_some` with `if let Some`&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;kind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;refactor.rewrite&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;data&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;codeActionParams&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;textDocument&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file:///home/flash/projects/ra/src/temp.rs&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>          <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>          <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        ...<br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;replace_is_some_with_if_let_some:RefactorRewrite:2&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Replace if with match&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;kind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;refactor.rewrite&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;data&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;codeActionParams&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;textDocument&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file:///home/flash/projects/ra/src/temp.rs&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>          <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>          <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        ...<br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;replace_if_let_with_match:RefactorRewrite:4&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">]</span><br></code></pre></td></tr></table></figure>
+<p>当我们决定应用其中一项时（假设是 Replace <code>is_some</code> with <code>if let Some</code>），点击对应的文字，此时客户端会发出一个 <a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeAction_resolve">codeAction/resolve</a> 请求，向服务端请求应用这个 CodeAction 后源代码会如何被改写，</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Replace `is_some` with `if let Some`&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;kind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;refactor.rewrite&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;data&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;codeActionParams&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;textDocument&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file:///home/flash/projects/ra/src/temp.rs&quot;</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;context&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;diagnostics&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;triggerKind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;replace_is_some_with_if_let_some:RefactorRewrite:2&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>服务端根据请求中的信息进行计算分析后，返回给客户端具体的响应，其中的 <code>newText</code> 和 <code>range</code> 字段告诉客户端把 <code>range</code> 范围中的旧代码替换为 <code>newText</code> 表示的内容。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Replace `is_some` with `if let Some`&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;kind&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;refactor.rewrite&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;edit&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;documentChanges&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;textDocument&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file:///home/flash/projects/ra/src/temp.rs&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">63</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;edits&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>          <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>              <span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">7</span><br>              <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>              <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;line&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;character&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">18</span><br>              <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;newText&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;let Some($&#123;0:a&#125;) = a&quot;</span><br>          <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">]</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    ...<br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+<p>一个完整的请求响应过程至此结束，类似的过程在用户在编辑器中写代码，移动鼠标悬浮，各种点击查看等的过程中时刻发生着。</p>
+<h1 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/">Language Server Protocol Specification - 3.17</a></li>
+<li><a target="_blank" rel="noopener" href="https://liiked.github.io/VS-Code-Extension-Doc-ZH/#/language-extensions/programmatic-language-features">VSCode 插件中文文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=I3RXottNwk0&amp;list=PLhb66M_x9UmrqXhQuIpWC5VgTdrGxMx3y&amp;ab_channel=AlekseyKladov">Explaining Rust Analyzer</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%BC%80%E6%BA%90/Rust-Analyzer/">Rust Analyzer</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/11/27/%E6%8E%92%E6%9F%A5%E4%B8%80%E4%B8%AA%20Rust%20Analyzer%20%E5%8F%91%E7%89%88%E5%90%8E%E5%87%BA%E7%8E%B0%E7%9A%84%20bug/">
+                        <span class="hidden-mobile">排查一个 Rust Analyzer 发版后出现的 bug</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments">
+                
+                
+    <div id="giscus" class="giscus"></div>
+    <!-- <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"Young-Flash/young-flash.github.io","repo-id":"R_kgDOHN76ng","category":"Announcements","category-id":"DIC_kwDOHN76ns4CXf6t","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"theme":"preferred_color_scheme","lang":"zh-CN","input-position":"bottom"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script> -->
+
+    <script src="https://giscus.app/client.js"
+        data-repo="Young-Flash/young-flash.github.io"
+        data-repo-id="R_kgDOHN76ng"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOHN76ns4CXf6t"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js" ></script>
+
+
+
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>
