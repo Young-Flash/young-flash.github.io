@@ -181,8 +181,8 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2024-01-01 16:46" pubdate>
-        2024年1月1日 下午
+      <time datetime="2024-01-02 20:26" pubdate>
+        2024年1月2日 晚上
       </time>
     </span>
   
@@ -193,7 +193,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.6k 字
+      2.7k 字
     </span>
   
 
@@ -237,7 +237,7 @@
             
             <div class="markdown-body">
               <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>最近给 Rust Analyzer(RA) 贡献了<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pulls?q=is%3Apr+author%3AYoung-Flash+is%3Aclosed">一些 PR</a>，在这过程中对于 IDE 功能的实现挺感兴趣的，所以有了这篇文章，记录一下我在探索 Rust Analyzer 的 IDE 功能实现的过程。首先想先从 LSP(Language Server Protocol) 在 Rust Analyzer 中的实现开始，后面可能会介绍一些其他内容，比如 RA 服务端的 AST 解析、智能 assist 和 diagnostic quickfix 实现、HIR lowering … （有可能会鸽哈哈哈哈）</p>
+<p>最近给 Rust Analyzer(RA) 贡献了<a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer/pulls?q=is%3Apr+author%3AYoung-Flash+is%3Aclosed">一些 PR</a>，在这过程中对于它的 IDE 功能实现挺感兴趣的，于是有了新年的这第一篇博客，记录一下我在探索 Rust Analyzer 的 IDE 功能实现的过程。首先想先从 LSP(Language Server Protocol) 在 Rust Analyzer 中的实现开始，后面可能会介绍一些其他内容，比如 RA 服务端的 AST 解析、智能 assist 和 diagnostic quickfix 实现、HIR lowering … （有可能会鸽哈哈哈哈）</p>
 <h2 id="rust-analyzer-介绍"><a class="markdownIt-Anchor" href="#rust-analyzer-介绍"></a> Rust Analyzer 介绍</h2>
 <p><a target="_blank" rel="noopener" href="https://github.com/rust-lang/rust-analyzer">Rust Analyzer</a> 是由 Rust 社区维护的 Rust 语言 IDE 功能实现，Rust Analyzer 插件搭配 VSCode 可以得到一个现代化的智能 Rust IDE，这或许是目前最流行的 Rust 开发环境。我觉得对于一门新的编程语言，在 VSCode 的强大的编辑器功能上构建 language-specific 的 IDE 功能是兼顾开发成本和用户体验的最佳选择，毕竟从零开发一个 IDE 所需的成本可想而知，而且就算开发出来了短时间内用户体验也比不上经过千锤百炼的 VSCode。</p>
 <p>从用户的角度而言，Rust Analyzer 只是 VSCode 插件市场上的一个插件，安装完 Rust 工具链之后再安装这个插件就能得到开箱即用的 IDE 功能。为了达到这个目的，RA 背后做了不少工作。在它的 GitHub 主页 上的 About 介绍上是这么写的：<strong>A Rust compiler front-end for IDEs</strong>；是的，RA 首先是一个编译器前端，准确的说，它是一个旨在实现 IDE 功能的编译器前端。</p>
